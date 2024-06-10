@@ -1,7 +1,3 @@
-//db.getCollection("data_association_summary").find({}).limit(2)
-//print(db.getCollection("data_association_detail").countDocuments());
-//    print(db.getCollection("Tasawar_data_association_detail").find({}).size());
-
 
 function dataAssociationWithEvent(clientCollection, userCollection, detailCollection, summaryCollection, event, timelineData) {
     var userDb = db.getSiblingDB("dev-qhn-ninepatch-user");
@@ -63,8 +59,6 @@ function dataAssociationWithEvent(clientCollection, userCollection, detailCollec
                 },
                 "_class": "dataAssociationDetail"
             };
-            //        print(dataAssociationDetailDoc);
-
             var dataAssociationSummaryDoc = {
                 "client": dataAssociationDetailDoc.client,
                 "associations": [],
@@ -83,7 +77,6 @@ function dataAssociationWithEvent(clientCollection, userCollection, detailCollec
 
             dataAssociationDetailedDocumentsList.push(dataAssociationDetailDoc);
             dataAssociationSummaryDocumentsList.push(dataAssociationDetailDoc);
-            //            print(dataAssociationSummaryDoc);
         } else {
             console.log(`${+ !createrUser ? "Creater User: " + userId.toString() : !modifierUser ? "Modifier User: " + modifierUserId.toString() : ""} not present.`)
         }
