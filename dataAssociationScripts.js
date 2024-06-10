@@ -7,10 +7,12 @@ function dataAssociationWithEvent(clientCollection, userCollection, detailCollec
     }, {});
     var dataAssociationDetailedDocumentsList = [];
     var dataAssociationSummaryDocumentsList = [];
-    var batchSize = 5;
+    var batchSize = 7;
     var clientsDocumetsCount = 0;
     var batchNumber = 1;
-    db.getCollection(clientCollection).find({}).forEach(client => {
+    var clientsList = db.getCollection(clientCollection).find({}).toArray();
+    var secondLastBatchNuber = Math.floor(clientsList.length / batchSize);
+    clientsList.forEach(client => {
         var userId = ObjectId(client.createdBy);
         var modifierUserId = ObjectId(client.lastModifiedBy);
         var createrUser = userDb.getCollection(userCollection).findOne({ _id: userId });
@@ -101,16 +103,15 @@ function dataAssociationWithEvent(clientCollection, userCollection, detailCollec
             dataAssociationDetailedDocumentsList.push(dataAssociationDetailDoc);
             dataAssociationSummaryDocumentsList.push(dataAssociationDetailDoc);
             clientsDocumetsCount++;
-
-            if (clientsDocumetsCount >= batchSize) {
+            if (clientsDocumetsCount >= batchSize || (batchNumber > secondLastBatchNuber && clientsDocumetsCount>=clientsList.length%batchSize )) {
                 try {
-                    var detailResponse = db.getCollection(detailCollection).insertMany(dataAssociationDetailedDocumentsList);
-                    var summaryResponse = db.getCollection(summaryCollection).insertMany(dataAssociationSummaryDocumentsList);
-                    print(`${Object.values(detailResponse.insertedIds).length} documents inserted into ${detailCollection} collection`);
-                    print(`${Object.values(summaryResponse.insertedIds).length} documents inserted into ${summaryCollection} collection`);
+                    //                    var detailResponse = db.getCollection(detailCollection).insertMany(dataAssociationDetailedDocumentsList);
+                    //                    var summaryResponse = db.getCollection(summaryCollection).insertMany(dataAssociationSummaryDocumentsList);
+                    //                    print(`${Object.values(detailResponse.insertedIds).length} documents inserted into ${detailCollection} collection`);
+                    //                    print(`${Object.values(summaryResponse.insertedIds).length} documents inserted into ${summaryCollection} collection`);
                     print(`Data inserted successfully for Batch Number: ${batchNumber}`);
-                    print(dataAssociationDetailedDocumentsList);
-                    print(dataAssociationSummaryDocumentsList);
+                    //                    print(dataAssociationDetailedDocumentsList);
+                    //                    print(dataAssociationSummaryDocumentsList);
                 } catch (e) {
                     print(`Unalbe to insert records for batch ${batchNumber}`);
                     print(e);
@@ -125,8 +126,10 @@ function dataAssociationWithEvent(clientCollection, userCollection, detailCollec
         } else {
             console.log(`${+ !createrUser ? "Creater User: " + userId.toString() : !modifierUser ? "Modifier User: " + modifierUserId.toString() : ""} not present.`)
         }
+        print(batchNumber)
     });
 }
 
 dataAssociationWithEvent("Tasawar_crn_client", "user", "Tasawar_data_association_detail", "Tasawar_data_association_summary", "CLIENT_REGISTRY", true, "5f58aaa8149b3f0006e2e1f7");
 
+//print("next")
