@@ -5,6 +5,8 @@
 
 function dataAssociationWithEvent(clientCollection, userCollection, event, timelineData) {
     var userDb = db.getSiblingDB("dev-qhn-ninepatch-user");
+    var allTenantsInfo = db.getSiblingDB("dev-qhn-ninepatch-agency").getCollection("tenant").find({}, { name: 1 })
+    print(allTenantsInfo);
     var dataAssociationDetailedDocumentsList = [];
     var dataAssociationSummaryDocumentsList = [];
     db.getCollection(clientCollection).find({}).forEach(client => {
