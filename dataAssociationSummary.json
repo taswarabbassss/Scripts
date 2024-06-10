@@ -1,0 +1,200 @@
+{
+    "_id" : ObjectId("664c8d0cdd989a717f57ca24"),
+    "client" : {
+        "_id" : ObjectId("5d2328c724aa9a00013af0c7"),
+        "firstName" : "Rayen",
+        "lastName" : "Smith"
+    },
+    "associations" : [
+        {
+            "user" : {
+                "id" : "5cff9da0149b3f0001cc73f0",
+                "firstName" : "Oliver",
+                "lastName" : "Brain",
+                "fullName" : "Oliver Brain",
+                "isAddByCaseLoad" : false
+            },
+            "assocDate" : ISODate("2024-05-21T12:01:16.038+0000"),
+            "status" : "ACTIVE"
+        },
+        {
+            "user" : {
+                "id" : "5fea08d19194be00064e60ef",
+                "firstName" : "mak",
+                "lastName" : "khan 2",
+                "fullName" : "mak khan 2",
+                "isAddByCaseLoad" : false
+            },
+            "assocDate" : ISODate("2024-05-21T13:25:30.493+0000"),
+            "status" : "ACTIVE"
+        },
+        {
+            "user" : {
+                "id" : "606ee52e42eba400071b4288",
+                "fullName" : "null null",
+                "isAddByCaseLoad" : false
+            },
+            "assocDate" : ISODate("2024-05-21T13:26:15.923+0000"),
+            "status" : "ACTIVE"
+        },
+        {
+            "user" : {
+                "id" : "605c7c69bfe5230007c10a7f",
+                "fullName" : "null null",
+                "isAddByCaseLoad" : false
+            },
+            "assocDate" : ISODate("2024-05-21T13:26:15.949+0000"),
+            "status" : "ACTIVE"
+        },
+        {
+            "user" : {
+                "id" : "60772fc542eba40008539513",
+                "fullName" : "null null",
+                "isAddByCaseLoad" : false
+            },
+            "assocDate" : ISODate("2024-05-21T13:26:15.969+0000"),
+            "status" : "ACTIVE"
+        },
+        {
+            "user" : {
+                "id" : "6051a7c230c49e0008a8bd99",
+                "fullName" : "null null",
+                "isAddByCaseLoad" : false
+            },
+            "assocDate" : ISODate("2024-05-21T13:26:15.989+0000"),
+            "status" : "ACTIVE"
+        },
+        {
+            "user" : {
+                "id" : "5feda7a49194be00062d6208",
+                "fullName" : "null null",
+                "isAddByCaseLoad" : false
+            },
+            "assocDate" : ISODate("2024-05-21T13:55:45.426+0000"),
+            "status" : "ACTIVE"
+        },
+        {
+            "user" : {
+                "id" : "65bb8c52844c9f61b96fe687",
+                "fullName" : "null null",
+                "isAddByCaseLoad" : false
+            },
+            "assocDate" : ISODate("2024-05-21T13:55:45.523+0000"),
+            "status" : "ACTIVE"
+        },
+        {
+            "user" : {
+                "id" : "619bafa0a7b11b000b5806d3",
+                "fullName" : "null null",
+                "isAddByCaseLoad" : false
+            },
+            "assocDate" : ISODate("2024-05-21T14:11:18.192+0000"),
+            "status" : "ACTIVE"
+        },
+        {
+            "user" : {
+                "id" : "6164eba4a7b11b0007ff7576",
+                "fullName" : "null null",
+                "isAddByCaseLoad" : false
+            },
+            "assocDate" : ISODate("2024-05-21T14:11:18.211+0000"),
+            "status" : "ACTIVE"
+        },
+        {
+            "user" : {
+                "id" : "66472d0ddebfa1353b074ab1",
+                "fullName" : "null null",
+                "isAddByCaseLoad" : false
+            },
+            "agency" : {
+                "_id" : ObjectId("66472a87d8ada906745af4d8"),
+                "name" : "Semaab QA Agency",
+                "nickname" : ""
+            },
+            "assocDate" : ISODate("2024-05-30T15:00:47.886+0000"),
+            "status" : "ACTIVE"
+        }
+    ],
+    "createdBy" : "5cff9da0149b3f0001cc73f0",
+    "createdAt" : ISODate("2024-05-21T12:01:16.076+0000"),
+    "lastModifiedBy" : "5cff9da0149b3f0001cc73f0",
+    "lastModifiedAt" : ISODate("2024-05-21T12:01:16.076+0000"),
+    "dataAudit" : {
+        "created" : {
+            "when" : ISODate("2024-05-21T12:01:16.059+0000"),
+            "tenantId" : "5f572b995d15761b68b1ef0c",
+            "tenantName" : "CRN",
+            "entityId" : "5dc2a9cb9194be0006fbbee5",
+            "entityName" : "Care plus",
+            "userId" : "5cff9da0149b3f0001cc73f0",
+            "userFullName" : "Oliver Brain"
+        },
+        "updated" : {
+            "when" : ISODate("2024-05-21T12:01:16.059+0000"),
+            "tenantId" : "5f572b995d15761b68b1ef0c",
+            "tenantName" : "CRN",
+            "entityId" : "5dc2a9cb9194be0006fbbee5",
+            "entityName" : "Care plus",
+            "userId" : "5cff9da0149b3f0001cc73f0",
+            "userFullName" : "Oliver Brain"
+        }
+    },
+    "_class" : "dataAssociationSummary"
+}
+{
+    "_id" : ObjectId("664c8db3dd989a717f57ca29"),
+    "client" : {
+        "_id" : ObjectId("664c8db2dd989a717f57ca26"),
+        "firstName" : "William ",
+        "lastName" : "Johnson"
+    },
+    "associations" : [
+        {
+            "user" : {
+                "id" : "5cff9da0149b3f0001cc73f0",
+                "firstName" : "Oliver",
+                "lastName" : "Brain",
+                "fullName" : "Oliver Brain",
+                "isAddByCaseLoad" : false
+            },
+            "assocDate" : ISODate("2024-05-21T12:04:03.194+0000"),
+            "status" : "ACTIVE"
+        },
+        {
+            "user" : {
+                "id" : "5fea08d19194be00064e60ef",
+                "firstName" : "mak",
+                "lastName" : "khan 2",
+                "fullName" : "mak khan 2",
+                "isAddByCaseLoad" : false
+            },
+            "assocDate" : ISODate("2024-05-21T12:11:14.516+0000"),
+            "status" : "ACTIVE"
+        }
+    ],
+    "createdBy" : "5cff9da0149b3f0001cc73f0",
+    "createdAt" : ISODate("2024-05-21T12:04:03.208+0000"),
+    "lastModifiedBy" : "5cff9da0149b3f0001cc73f0",
+    "lastModifiedAt" : ISODate("2024-05-21T12:04:03.208+0000"),
+    "dataAudit" : {
+        "created" : {
+            "when" : ISODate("2024-05-21T12:04:03.207+0000"),
+            "tenantId" : "5f572b995d15761b68b1ef0c",
+            "tenantName" : "CRN",
+            "entityId" : "5dc2a9cb9194be0006fbbee5",
+            "entityName" : "Care plus",
+            "userId" : "5cff9da0149b3f0001cc73f0",
+            "userFullName" : "Oliver Brain"
+        },
+        "updated" : {
+            "when" : ISODate("2024-05-21T12:04:03.207+0000"),
+            "tenantId" : "5f572b995d15761b68b1ef0c",
+            "tenantName" : "CRN",
+            "entityId" : "5dc2a9cb9194be0006fbbee5",
+            "entityName" : "Care plus",
+            "userId" : "5cff9da0149b3f0001cc73f0",
+            "userFullName" : "Oliver Brain"
+        }
+    },
+    "_class" : "dataAssociationSummary"
+}

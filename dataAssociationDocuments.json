@@ -1,0 +1,116 @@
+{
+    "_id" : ObjectId("664d8033d4c9bd2153f26912"),
+    // CLIENT
+    "client" : {
+        "_id" : ObjectId("664d8033d4c9bd2153f2690e"),
+        "firstName" : "Alexa",
+        "lastName" : "Fatima"
+    }
+    
+    // USER
+    ,
+    "user" : {
+        "id" : "66472d0ddebfa1353b074ab1",
+        "firstName" : "Seemab",
+        "lastName" : "Super",
+        "fullName" : "Seemab Super",
+        "isAddByCaseLoad" : false
+    },
+    //AGENCY
+    "agency" : {
+        "_id" : ObjectId("66472a87d8ada906745af4d8"),
+        "name" : "Semaab QA Agency",
+        "nickname" : ""
+    },
+    //  CLIENT
+    "assocType" : "CLIENT_REGISTRY",
+    "assocName" : "CLIENT_REGISTRY",
+    "assocDate" : ISODate("2024-05-22T05:18:43.813+0000"),
+    "sourceId" : "664d8033d4c9bd2153f2690e",
+    
+    //DYNAMIC
+    "timelineData" : true,
+    //DEFAULT
+    "status" : "ACTIVE",
+    //USER
+    "createdBy" : "66472d0ddebfa1353b074ab1",
+    //CLIENT
+    "createdAt" : ISODate("2024-05-22T05:18:43.823+0000"),
+    "lastModifiedBy" : "66472d0ddebfa1353b074ab1",
+    "lastModifiedAt" : ISODate("2024-05-22T05:18:43.823+0000"),
+    //DEFAULT
+    "dataStatus" : "ACTIVE",
+    "dataAudit" : {
+        "created" : {
+            "when" : ISODate("2024-05-22T05:18:43.823+0000"),
+            "tenantId" : "5f572b995d15761b68b1ef0c",
+            "tenantName" : "CRN",
+            "entityId" : "66472a87d8ada906745af4d8",
+            "entityName" : "Semaab QA Agency",
+            "userId" : "66472d0ddebfa1353b074ab1",
+            "userFullName" : "Seemab Super"
+        },
+        "updated" : {
+            "when" : ISODate("2024-05-22T05:18:43.823+0000"),
+            "tenantId" : "5f572b995d15761b68b1ef0c",
+            "tenantName" : "CRN",
+            "entityId" : "66472a87d8ada906745af4d8",
+            "entityName" : "Semaab QA Agency",
+            "userId" : "66472d0ddebfa1353b074ab1",
+            "userFullName" : "Seemab Super"
+        }
+    },
+    "_class" : "dataAssociationDetail"
+}
+{
+    "_id" : ObjectId("664f1170d8fda633139a9938"),
+    "client" : {
+        "_id" : ObjectId("664f1170d8fda633139a9934"),
+        "firstName" : "Qstest",
+        "lastName" : "Umair"
+    },
+    "user" : {
+        "id" : "633c03d9525c3b08e0a10bc4",
+        "firstName" : "Ismail",
+        "lastName" : "Haider E",
+        "fullName" : "Ismail Haider E",
+        "isAddByCaseLoad" : false
+    },
+    "agency" : {
+        "_id" : ObjectId("5eaaabd6149b3f0006514c3f"),
+        "name" : "Broo test",
+        "nickname" : "broooo"
+    },
+    "assocType" : "CLIENT_REGISTRY",
+    "assocName" : "CLIENT_REGISTRY",
+    "assocDate" : ISODate("2024-05-23T09:50:40.687+0000"),
+    "sourceId" : "664f1170d8fda633139a9934",
+    "timelineData" : true,
+    "status" : "ACTIVE",
+    "createdBy" : "633c03d9525c3b08e0a10bc4",
+    "createdAt" : ISODate("2024-05-23T09:50:40.703+0000"),
+    "lastModifiedBy" : "633c03d9525c3b08e0a10bc4",
+    "lastModifiedAt" : ISODate("2024-05-23T09:50:40.703+0000"),
+    "dataStatus" : "ACTIVE",
+    "dataAudit" : {
+        "created" : {
+            "when" : ISODate("2024-05-23T09:50:40.702+0000"),
+            "tenantId" : "5f572b995d15761b68b1ef0c",
+            "tenantName" : "CRN",
+            "entityId" : "5eaaabd6149b3f0006514c3f",
+            "entityName" : "Broo test",
+            "userId" : "633c03d9525c3b08e0a10bc4",
+            "userFullName" : "Ismail Haider E"
+        },
+        "updated" : {
+            "when" : ISODate("2024-05-23T09:50:40.702+0000"),
+            "tenantId" : "5f572b995d15761b68b1ef0c",
+            "tenantName" : "CRN",
+            "entityId" : "5eaaabd6149b3f0006514c3f",
+            "entityName" : "Broo test",
+            "userId" : "633c03d9525c3b08e0a10bc4",
+            "userFullName" : "Ismail Haider E"
+        }
+    },
+    "_class" : "dataAssociationDetail"
+}
