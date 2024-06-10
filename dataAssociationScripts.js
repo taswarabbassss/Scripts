@@ -3,18 +3,18 @@
 //    print(db.getCollection("Tasawar_data_association_detail").find({}).size());
 
 
-function dataAssociationWithEvent(clientCollection, userCollection, event, timelineData) {
+function dataAssociationWithEvent(clientCollection, userCollection, detailCollection, summaryCollection, event, timelineData) {
     var userDb = db.getSiblingDB("dev-qhn-ninepatch-user");
-    var allTenantsInfo = db.getSiblingDB("dev-qhn-ninepatch-agency").getCollection("tenant").find({}, { name: 1 })
-    print(allTenantsInfo);
+    var allTenantsInfo = db.getSiblingDB("dev-qhn-ninepatch-agency").getCollection("tenant").find({}, { name: 1 }).toArray();
     var dataAssociationDetailedDocumentsList = [];
     var dataAssociationSummaryDocumentsList = [];
     db.getCollection(clientCollection).find({}).forEach(client => {
-
         var userId = ObjectId(client.createdBy);
         var modifierUserId = ObjectId(client.lastModifiedBy);
         var createrUser = userDb.getCollection(userCollection).findOne({ _id: userId });
         var modifierUser = userDb.getCollection(userCollection).findOne({ _id: modifierUserId });
+        var createrUserTenantName = allTenantsInfo.filter(tenant => tenant._id.toString() === createrUser.defaultTenantId);
+        var modifierUserTenantName = allTenantsInfo.filter(tenant => tenant._id.toString() === modifierUser.defaultTenantId);
         if (createrUser && modifierUser) {
             var dataAssociationDetailDoc = {
                 "client": {
@@ -45,7 +45,7 @@ function dataAssociationWithEvent(clientCollection, userCollection, event, timel
                     "created": {
                         "when": client.createdAt,
                         "tenantId": createrUser.defaultTenantId,
-                        "tenantName": "CRN",
+                        "tenantName": createrUserTenantName,
                         "entityId": createrUser.agency._id.toString(),
                         "entityName": createrUser.agency.name,
                         "userId": client.createdBy,
@@ -54,7 +54,7 @@ function dataAssociationWithEvent(clientCollection, userCollection, event, timel
                     "updated": {
                         "when": client.lastModifiedAt,
                         "tenantId": modifierUser.defaultTenantId,
-                        "tenantName": "CRN",
+                        "tenantName": modifierUserTenantName,
                         "entityId": modifierUser.agency._id.toString(),
                         "entityName": modifierUser.agency.name,
                         "userId": client.lastModifiedBy,
@@ -88,10 +88,15 @@ function dataAssociationWithEvent(clientCollection, userCollection, event, timel
             console.log(`${+ !createrUser ? "Creater User: " + userId.toString() : !modifierUser ? "Modifier User: " + modifierUserId.toString() : ""} not present.`)
         }
     });
-
-    print(dataAssociationDetailedDocumentsList.length);
-    print(dataAssociationSummaryDocumentsList.length);
+    try {
+        var detailResponse = db.getCollection(detailCollection).insertMany(dataAssociationDetailedDocumentsList);
+        var summaryResponse = db.getCollection(summaryCollection).insertMany(dataAssociationSummaryDocumentsList);
+        print(`${Object.values(detailResponse.insertedIds).length} documents inserted into ${detailCollection} collection`);
+        print(`${Object.values(summaryResponse.insertedIds).length} documents inserted into ${summaryCollection} collection`);
+    } catch (e) {
+        print(e);
+    }
 }
 
-dataAssociationWithEvent("Tasawar_crn_client", "user", "CLIENT_REGISTRY", true);
+dataAssociationWithEvent("Tasawar_crn_client", "user", "Tasawar_data_association_detail", "Tasawar_data_association_summary", "CLIENT_REGISTRY", true);
 
