@@ -3,16 +3,16 @@
 //    print(db.getCollection("Tasawar_data_association_detail").find({}).size());
 
 
-function dataAssociationWithEvent(event, timelineData) {
+function dataAssociationWithEvent(clientCollection, userCollection, event, timelineData) {
     var userDb = db.getSiblingDB("dev-qhn-ninepatch-user");
     var dataAssociationDetailedDocumentsList = [];
-        var dataAssociationSummaryDocumentsList = [];
-    db.getCollection("Tasawar_crn_client").find({}).forEach(client => {
+    var dataAssociationSummaryDocumentsList = [];
+    db.getCollection(clientCollection).find({}).forEach(client => {
 
         var userId = ObjectId(client.createdBy);
         var modifierUserId = ObjectId(client.lastModifiedBy);
-        var createrUser = userDb.getCollection("user").findOne({ _id: userId });
-        var modifierUser = userDb.getCollection("user").findOne({ _id: modifierUserId });
+        var createrUser = userDb.getCollection(userCollection).findOne({ _id: userId });
+        var modifierUser = userDb.getCollection(userCollection).findOne({ _id: modifierUserId });
         if (createrUser && modifierUser) {
             var dataAssociationDetailDoc = {
                 "client": {
@@ -78,7 +78,7 @@ function dataAssociationWithEvent(event, timelineData) {
                 "status": dataAssociationDetailDoc.status
             }
             dataAssociationSummaryDoc.associations.push(associationDoc);
-            
+
             dataAssociationDetailedDocumentsList.push(dataAssociationDetailDoc);
             dataAssociationSummaryDocumentsList.push(dataAssociationDetailDoc);
             //            print(dataAssociationSummaryDoc);
@@ -86,10 +86,10 @@ function dataAssociationWithEvent(event, timelineData) {
             console.log(`${+ !createrUser ? "Creater User: " + userId.toString() : !modifierUser ? "Modifier User: " + modifierUserId.toString() : ""} not present.`)
         }
     });
-    
+
     print(dataAssociationDetailedDocumentsList.length);
     print(dataAssociationSummaryDocumentsList.length);
 }
 
-dataAssociationWithEvent("CLIENT_REGISTRY", true);
+dataAssociationWithEvent("Tasawar_crn_client", "user", "CLIENT_REGISTRY", true);
 
