@@ -1,16 +1,37 @@
 
-function dataAssociationWithEvent(clientCollection, userCollection, detailCollection, summaryCollection, event, timelineData) {
+function dataAssociationWithEvent(clientCollection, userCollection, detailCollection, summaryCollection, event, timelineData, currentTenantId) {
     var userDb = db.getSiblingDB("dev-qhn-ninepatch-user");
-    var allTenantsInfo = db.getSiblingDB("dev-qhn-ninepatch-agency").getCollection("tenant").find({}, { name: 1 }).toArray();
+    var allTenantsInfo = db.getSiblingDB("dev-qhn-ninepatch-agency").getCollection("tenant").find({}, { name: 1 }).toArray().reduce((accumilator, tenant) => {
+        accumilator[tenant._id] = tenant.name;
+        return accumilator;
+    }, {});
     var dataAssociationDetailedDocumentsList = [];
     var dataAssociationSummaryDocumentsList = [];
+    var batchSize = 5;
+    var clientsDocumetsCount = 0;
+    var batchNumber = 1;
     db.getCollection(clientCollection).find({}).forEach(client => {
         var userId = ObjectId(client.createdBy);
         var modifierUserId = ObjectId(client.lastModifiedBy);
         var createrUser = userDb.getCollection(userCollection).findOne({ _id: userId });
-        var modifierUser = userDb.getCollection(userCollection).findOne({ _id: modifierUserId });
-        var createrUserTenantName = allTenantsInfo.filter(tenant => tenant._id.toString() === createrUser.defaultTenantId);
-        var modifierUserTenantName = allTenantsInfo.filter(tenant => tenant._id.toString() === modifierUser.defaultTenantId);
+        var modifierUser = userId.toString() === modifierUserId.toString() ? createrUser : userDb.getCollection(userCollection).findOne({ _id: modifierUserId });
+        if (!createrUser.defaultTenantId) {
+            if (createrUser.tenantIds.length > 0) {
+                createrUser.defaultTenantId = createrUser.tenantIds[0];
+            } else {
+                createrUser.defaultTenantId = currentTenantId;
+            }
+
+        }
+        if (!modifierUser.defaultTenantId) {
+            if (createrUser.tenantIds.length > 0) {
+                createrUser.defaultTenantId = createrUser.tenantIds[0];
+            } else {
+                createrUser.defaultTenantId = currentTenantId;
+            }
+        }
+        var createrUserTenantName = allTenantsInfo[createrUser.defaultTenantId];
+        var modifierUserTenantName = allTenantsInfo[modifierUser.defaultTenantId];
         if (createrUser && modifierUser) {
             var dataAssociationDetailDoc = {
                 "client": {
@@ -59,6 +80,8 @@ function dataAssociationWithEvent(clientCollection, userCollection, detailCollec
                 },
                 "_class": "dataAssociationDetail"
             };
+            //        print(dataAssociationDetailDoc);
+
             var dataAssociationSummaryDoc = {
                 "client": dataAssociationDetailDoc.client,
                 "associations": [],
@@ -77,19 +100,33 @@ function dataAssociationWithEvent(clientCollection, userCollection, detailCollec
 
             dataAssociationDetailedDocumentsList.push(dataAssociationDetailDoc);
             dataAssociationSummaryDocumentsList.push(dataAssociationDetailDoc);
+            clientsDocumetsCount++;
+
+            if (clientsDocumetsCount >= batchSize) {
+                try {
+                    var detailResponse = db.getCollection(detailCollection).insertMany(dataAssociationDetailedDocumentsList);
+                    var summaryResponse = db.getCollection(summaryCollection).insertMany(dataAssociationSummaryDocumentsList);
+                    print(`${Object.values(detailResponse.insertedIds).length} documents inserted into ${detailCollection} collection`);
+                    print(`${Object.values(summaryResponse.insertedIds).length} documents inserted into ${summaryCollection} collection`);
+                    print(`Data inserted successfully for Batch Number: ${batchNumber}`);
+                    print(dataAssociationDetailedDocumentsList);
+                    print(dataAssociationSummaryDocumentsList);
+                } catch (e) {
+                    print(`Unalbe to insert records for batch ${batchNumber}`);
+                    print(e);
+                } finally {
+                    batchNumber++;
+                    clientsDocumetsCount = 0;
+                    dataAssociationDetailedDocumentsList = [];
+                    dataAssociationSummaryDocumentsList = [];
+                }
+            }
+
         } else {
             console.log(`${+ !createrUser ? "Creater User: " + userId.toString() : !modifierUser ? "Modifier User: " + modifierUserId.toString() : ""} not present.`)
         }
     });
-    try {
-        var detailResponse = db.getCollection(detailCollection).insertMany(dataAssociationDetailedDocumentsList);
-        var summaryResponse = db.getCollection(summaryCollection).insertMany(dataAssociationSummaryDocumentsList);
-        print(`${Object.values(detailResponse.insertedIds).length} documents inserted into ${detailCollection} collection`);
-        print(`${Object.values(summaryResponse.insertedIds).length} documents inserted into ${summaryCollection} collection`);
-    } catch (e) {
-        print(e);
-    }
 }
 
-dataAssociationWithEvent("Tasawar_crn_client", "user", "Tasawar_data_association_detail", "Tasawar_data_association_summary", "CLIENT_REGISTRY", true);
+dataAssociationWithEvent("Tasawar_crn_client", "user", "Tasawar_data_association_detail", "Tasawar_data_association_summary", "CLIENT_REGISTRY", true, "5f58aaa8149b3f0006e2e1f7");
 
