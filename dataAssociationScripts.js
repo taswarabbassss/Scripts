@@ -1,5 +1,5 @@
 
-function dataAssociationWithEvent(clientCollection, userCollection, detailCollection, summaryCollection, event, timelineData, currentTenantId) {
+function dataAssociationWithEvent(clientCollection, userCollection, detailCollection, summaryCollection, event, timelineData, currentTenantId,batchSize) {
     var userDb = db.getSiblingDB("dev-qhn-ninepatch-user");
     var allTenantsInfo = db.getSiblingDB("dev-qhn-ninepatch-agency").getCollection("tenant").find({}, { name: 1 }).toArray().reduce((accumilator, tenant) => {
         accumilator[tenant._id] = tenant.name;
@@ -7,7 +7,6 @@ function dataAssociationWithEvent(clientCollection, userCollection, detailCollec
     }, {});
     var dataAssociationDetailedDocumentsList = [];
     var dataAssociationSummaryDocumentsList = [];
-    var batchSize = 50;
     var clientsDocumetsCount = 0;
     var batchNumber = 1;
     var clientsList = db.getCollection(clientCollection).find({}).toArray();
@@ -127,5 +126,5 @@ function dataAssociationWithEvent(clientCollection, userCollection, detailCollec
     });
 }
 
-dataAssociationWithEvent("Tasawar_crn_client", "user", "Tasawar_data_association_detail", "Tasawar_data_association_summary", "CLIENT_REGISTRY", true, "5f58aaa8149b3f0006e2e1f7");
+dataAssociationWithEvent("Tasawar_crn_client", "user", "Tasawar_data_association_detail", "Tasawar_data_association_summary", "CLIENT_REGISTRY", true, "5f58aaa8149b3f0006e2e1f7",50);
 
