@@ -1,33 +1,27 @@
 [
   {
-      "_id" : ObjectId("66695431bb934736b9fcd98e"),
+      "_id" : ObjectId("6669886f3cb0d354696621eb"),
       "client" : {
           "_id" : ObjectId("5d0235a597a1c00001167402"),
           "firstName" : "Victor",
           "lastName" : "Xyz"
       },
-      "user" : {
-          "id" : "5cff9da0149b3f0001cc73f0",
-          "firstName" : "Oliver",
-          "lastName" : "Brain",
-          "fullName" : "Oliver Brain"
-      },
-      "agency" : {
-          "_id" : ObjectId("5dc2a9cb9194be0006fbbee5"),
-          "name" : "Care plus",
-          "nickname" : "MAKS"
-      },
-      "assocType" : "CLIENT_REGISTRY",
-      "assocName" : "CLIENT_REGISTRY",
-      "assocDate" : ISODate("2019-01-01T00:00:58.095+0000"),
-      "sourceId" : "5d0235a597a1c00001167402",
-      "timelineData" : true,
-      "status" : "ACTIVE",
+      "associations" : [
+          {
+              "user" : {
+                  "id" : "5cff9da0149b3f0001cc73f0",
+                  "firstName" : "Oliver",
+                  "lastName" : "Brain",
+                  "fullName" : "Oliver Brain"
+              },
+              "assocDate" : ISODate("2019-01-01T00:00:58.095+0000"),
+              "status" : "ACTIVE"
+          }
+      ],
       "createdBy" : "5cff9da0149b3f0001cc73f0",
       "createdAt" : ISODate("2019-01-01T00:00:58.095+0000"),
       "lastModifiedBy" : "5cff9da0149b3f0001cc73f0",
       "lastModifiedAt" : ISODate("2024-05-21T11:13:03.562+0000"),
-      "dataStatus" : "ACTIVE",
       "dataAudit" : {
           "created" : {
               "when" : ISODate("2019-01-01T00:00:58.095+0000"),
@@ -47,7 +41,6 @@
               "userId" : "5cff9da0149b3f0001cc73f0",
               "userFullName" : "Oliver Brain"
           }
-      },
-      "_class" : "dataAssociationDetail"
+      }
   }
 ]

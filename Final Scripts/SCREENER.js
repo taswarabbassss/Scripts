@@ -84,10 +84,18 @@ function dataAssociationWithEvent(clientCollection, userCollection, screenerColl
                     "_class": "dataAssociationDetail"
                 };
 
-                //                let summaryObject = db.getCollection(summaryCollection).find({ $and: [{ "client._id": client._id }, { associations: { $elemMatch: { "user.id": screener.createdBy } } }] }).toArray();
-                print("CLIENT: " + client._id);
-                print("USER: " + screener.createdBy);
-                var screenerSummaryObject = {};
+                let clientSummaryObject = db.getCollection(summaryCollection).findOne({ "client._id": client._id });
+                //                { associations: { $elemMatch: { "user.id": screener.createdBy } } }
+                if (clientSummaryObject) {
+                    let userAssociated = db.getCollection(summaryCollection).findOne({ $and: [{ _id: clientSummaryObject._id },{ associations: { $elemMatch: { "user.id": screener.createdBy } } }] });
+                    if(userAssociated){
+                        print("user is already associated");
+                    } else{
+                        print("insert the user in assocations")
+                    }
+                } else {
+                    print("insert a new summary object for clientTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT");
+                }
 
             } else {
                 print(`${+ !createrUser ? "Creater User: " + createrUser.createdBy : !modifierUser ? "Modifier User: " + screener.lastModifiedBy : ""} not present.`)
