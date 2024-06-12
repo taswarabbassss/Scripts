@@ -1,0 +1,104 @@
+[
+    {
+        "_id": ObjectId("664c8f62dd989a717f57ca2d"),
+        "client": {
+            "_id": ObjectId("664c8db2dd989a717f57ca26"),
+            "firstName": "William ",
+            "lastName": "Johnson"
+        },
+        "user": {
+            "id": "5fea08d19194be00064e60ef",
+            "firstName": "mak",
+            "lastName": "khan 2",
+            "fullName": "mak khan 2",
+            "isAddByCaseLoad": false
+        },
+        "agency": {
+            "_id": ObjectId("5ef4853f149b3f0006269f8b"),
+            "name": "Dev Agency",
+            "nickname": "Deviller's agency"
+        },
+        "assocType": "SCREENER",
+        "assocName": "SCREENER",
+        "assocDate": ISODate("2024-05-21T12:11:14.516+0000"),
+        "sourceId": "664c8f62dd989a717f57ca2c",
+        "timelineData": true,
+        "status": "ACTIVE",
+        "createdBy": "5fea08d19194be00064e60ef",
+        "createdAt": ISODate("2024-05-21T12:11:14.559+0000"),
+        "lastModifiedBy": "5fea08d19194be00064e60ef",
+        "lastModifiedAt": ISODate("2024-05-21T12:11:14.559+0000"),
+        "dataAudit": {
+            "created": {
+                "when": ISODate("2024-05-21T12:11:14.559+0000"),
+                "tenantId": "5f572b995d15761b68b1ef0c",
+                "tenantName": "CRN",
+                "entityId": "5ef4853f149b3f0006269f8b",
+                "entityName": "Dev Agency",
+                "userId": "5fea08d19194be00064e60ef",
+                "userFullName": "mak khan 2"
+            },
+            "updated": {
+                "when": ISODate("2024-05-21T12:11:14.559+0000"),
+                "tenantId": "5f572b995d15761b68b1ef0c",
+                "tenantName": "CRN",
+                "entityId": "5ef4853f149b3f0006269f8b",
+                "entityName": "Dev Agency",
+                "userId": "5fea08d19194be00064e60ef",
+                "userFullName": "mak khan 2"
+            }
+        },
+        "_class": "dataAssociationDetail"
+    },
+    {
+        "_id": ObjectId("664ca147dd989a717f57ca43"),
+        "client": {
+            "_id": ObjectId("5d2328c724aa9a00013af0c7"),
+            "firstName": "Rayen",
+            "lastName": "Smith"
+        },
+        "user": {
+            "id": "5fea08d19194be00064e60ef",
+            "firstName": "mak",
+            "lastName": "khan 2",
+            "fullName": "mak khan 2",
+            "isAddByCaseLoad": false
+        },
+        "agency": {
+            "_id": ObjectId("5ef4853f149b3f0006269f8b"),
+            "name": "Dev Agency",
+            "nickname": "Deviller's agency"
+        },
+        "assocType": "SCREENER",
+        "assocName": "SCREENER",
+        "assocDate": ISODate("2024-05-21T13:27:35.423+0000"),
+        "sourceId": "664ca147dd989a717f57ca42",
+        "timelineData": true,
+        "status": "ACTIVE",
+        "createdBy": "5fea08d19194be00064e60ef",
+        "createdAt": ISODate("2024-05-21T13:27:35.430+0000"),
+        "lastModifiedBy": "5fea08d19194be00064e60ef",
+        "lastModifiedAt": ISODate("2024-05-21T13:27:35.430+0000"),
+        "dataAudit": {
+            "created": {
+                "when": ISODate("2024-05-21T13:27:35.430+0000"),
+                "tenantId": "5f572b995d15761b68b1ef0c",
+                "tenantName": "CRN",
+                "entityId": "5ef4853f149b3f0006269f8b",
+                "entityName": "Dev Agency",
+                "userId": "5fea08d19194be00064e60ef",
+                "userFullName": "mak khan 2"
+            },
+            "updated": {
+                "when": ISODate("2024-05-21T13:27:35.430+0000"),
+                "tenantId": "5f572b995d15761b68b1ef0c",
+                "tenantName": "CRN",
+                "entityId": "5ef4853f149b3f0006269f8b",
+                "entityName": "Dev Agency",
+                "userId": "5fea08d19194be00064e60ef",
+                "userFullName": "mak khan 2"
+            }
+        },
+        "_class": "dataAssociationDetail"
+    }
+]

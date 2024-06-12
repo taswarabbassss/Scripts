@@ -25,10 +25,10 @@ function dataAssociationWithEvent(clientCollection, userCollection, detailCollec
 
         }
         if (!modifierUser.defaultTenantId) {
-            if (createrUser.tenantIds.length > 0) {
-                createrUser.defaultTenantId = createrUser.tenantIds[0];
+            if (modifierUser.tenantIds.length > 0) {
+                modifierUser.defaultTenantId = modifierUser.tenantIds[0];
             } else {
-                createrUser.defaultTenantId = currentTenantId;
+                modifierUser.defaultTenantId = currentTenantId;
             }
         }
         var createrUserTenantName = allTenantsInfo[createrUser.defaultTenantId];
@@ -45,7 +45,6 @@ function dataAssociationWithEvent(clientCollection, userCollection, detailCollec
                     "firstName": createrUser.firstName,
                     "lastName": createrUser.lastName,
                     "fullName": createrUser.firstName + " " + createrUser.lastName,
-                    "isAddByCaseLoad": false
                 },
                 "agency": createrUser.agency,
                 "assocType": event,
@@ -100,7 +99,7 @@ function dataAssociationWithEvent(clientCollection, userCollection, detailCollec
             dataAssociationSummaryDoc.associations.push(associationDoc);
 
             dataAssociationDetailedDocumentsList.push(dataAssociationDetailDoc);
-            dataAssociationSummaryDocumentsList.push(dataAssociationDetailDoc);
+            dataAssociationSummaryDocumentsList.push(dataAssociationSummaryDoc);
             clientsDocumetsCount++;
             if (clientsDocumetsCount >= batchSize || (batchNumber > secondLastBatchNuber && clientsDocumetsCount >= clientsList.length % batchSize)) {
                 try {

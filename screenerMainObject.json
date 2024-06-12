@@ -1,0 +1,151 @@
+{
+    "_id": ObjectId("5e9016ae2ab79c000752c680"),
+    "positiveNeeds": [
+        "Employment"
+    ],
+    "assessmentType": "CFSA_20",
+    "formId": "ds",
+    "docTitlePlusClientName": "dev",
+    "description": "",
+    "totalScore": "",
+    "taskName": "Log Screener or Assessment",
+    "notes": "ew",
+    "isAddToDocVault": false,
+    "documentDate": ISODate("2020-04-09T19:00:00.000+0000"),
+    "client": {
+        "_id": ObjectId("5e8c5e002ab79c00069a9dad"),
+        "firstName": "dev",
+        "lastName": "client",
+        "profilePicture": ""
+    },
+    "agencyInfo": {
+        "_id": ObjectId("5dc2a9cb9194be0006fbbee5"),
+        "name": "Care plus",
+        "nickname": "MAKS",
+        "abbreviation": "ATR1",
+        "pictures": [
+            "https://dev-qssystems-ninepatch.s3.us-east-2.amazonaws.com/datavault/agency/5dc2a9cb9194be0006fbbee5/AgencyPicture_5dc2a9cb9194be0006fbbee5_2024-04-17T105419.008037.png"
+        ],
+        "address": {
+            "city": {
+                "name": "Anchorage"
+            },
+            "street": "st 1",
+            "state": {
+                "name": "Alaska"
+            },
+            "zipCode": "99501",
+            "county": "Anchorage Municipality"
+        },
+        "identification": [
+            {
+                "tenantId": "5f572b995d15761b68b1ef0c",
+                "type": "adtOrgId",
+                "value": "456"
+            }
+        ]
+    },
+    "clientId": "5e8c5e002ab79c00069a9dad",
+    "userId": "5e69d2909194be0006e73cf1",
+    "updatedAt": ISODate("2020-04-10T06:48:14.714+0000"),
+    "createdBy": "5e69d2909194be0006e73cf1",
+    "createdAt": ISODate("2020-04-10T06:48:14.714+0000"),
+    "lastModifiedBy": "5e69d2909194be0006e73cf1",
+    "lastModifiedAt": ISODate("2020-04-10T06:48:14.714+0000"),
+    "_class": "clientAssessmentOrscreener",
+    "source": "CRN",
+    "givenBy": {
+        "firstName": "Zofishan",
+        "id": "5e006bc997a1c000076af3f9",
+        "lastName": "Khalid"
+    },
+    "assessmentName": "CFSA_20",
+    "documentName": "CFSA_20_DClie100420-06:48"
+}
+{
+    "_id": ObjectId("5e97fba52ab79c000683eea3"),
+    "assessmentType": "AHCM",
+    "formId": "123",
+    "docTitlePlusClientName": "1_AHC_Data_Elements-V6.0 (3) (1).xlsx-Grego",
+    "description": "",
+    "totalScore": "",
+    "taskName": "Log Screener or Assessment",
+    "notes": "Added doc to client vault",
+    "isAddToDocVault": true,
+    "documentDate": ISODate("2020-04-14T19:00:00.000+0000"),
+    "fileToUpload": {
+        "file": "File_1_AHC_Data_Elements-V6.0 (3) (1).xlsx_SOCIAL_GENERAL_ACCESS_SCREENER_OR_ASSESSMENT2020-04-16T063100.874992",
+        "fileExtension": "xlsx",
+        "documentTitle": "1_AHC_Data_Elements-V6.0 (3) (1).xlsx",
+        "dataDomain": "SOCIAL",
+        "dataAccessLevel": "GENERAL_ACCESS",
+        "notes": "",
+        "documentName": "File_1_AHC_Data_Elements-V6.0 (3) (1).xlsx_SOCIAL_GENERAL_ACCESS_SCREENER_OR_ASSESSMENT2020-04-16T063100.874992",
+        "documentType": "OTHER",
+        "uploadedAt": ISODate("2020-04-16T06:31:00.888+0000")
+    },
+    "client": {
+        "_id": ObjectId("5d02396c97a1c00001167403"),
+        "firstName": "Grego",
+        "lastName": "Test",
+        "profilePicture": "https://dev-qssystems-ninepatch.s3.amazonaws.com/datavault/client/5d02396c97a1c00001167403/ClientPicture_5d02396c97a1c00001167403_2020-04-08T193340.415601.png",
+        "initials": "GT"
+    },
+    "agencyInfo": {
+        "_id": ObjectId("5d020ce59194be00010d046b"),
+        "name": "Aging & Disability Resources for Coloradooo",
+        "nickname": "ADRCC-gs",
+        "abbreviation": "ADRF",
+        "pictures": [],
+        "address": {
+            "city": {
+                "name": "Orange Park",
+                "stateId": "3919"
+            },
+            "street": "test",
+            "state": {
+                "_id": "3919",
+                "name": "Florida",
+                "countryId": "231"
+            },
+            "zipCode": "32003",
+            "county": "Clay County"
+        },
+        "identification": []
+    },
+    "clientId": "5d02396c97a1c00001167403",
+    "userId": "5e74a1f69194be0006224e8c",
+    "updatedAt": ISODate("2020-04-16T06:31:01.576+0000"),
+    "createdBy": "5e74a1f69194be0006224e8c",
+    "createdAt": ISODate("2020-04-16T06:31:01.576+0000"),
+    "lastModifiedBy": "5e74a1f69194be0006224e8c",
+    "lastModifiedAt": ISODate("2020-04-16T06:31:01.576+0000"),
+    "_class": "clientAssessmentOrscreener",
+    "source": "CRN",
+    "givenBy": {
+        "firstName": "stella",
+        "id": "5d4bd2979194be0006b51df6",
+        "lastName": "smith"
+    },
+    "corePositiveNeeds": {
+        "food": false,
+        "living": true,
+        "safety": false,
+        "transportation": false,
+        "utilities": false
+    },
+    "supplementaryNeeds": {
+        "disabilities": false,
+        "education": false,
+        "employment": false,
+        "financialStrain": true,
+        "mentalHealth": false,
+        "physicalActivity": false,
+        "substanceAbuse": false,
+        "supportFromFamilyAndCommunity": false
+    },
+    "hiRisk": true,
+    "assessmentName": "AHCM",
+    "showToEveryOne": true,
+    "documentName": "AHCM_GTest160420-06:31"
+}
