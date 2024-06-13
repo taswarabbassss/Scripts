@@ -7,8 +7,8 @@ function dataAssociationWithEvent(clientCollection, userCollection, screenerColl
         accumilator[user._id.toString()] = user;
         return accumilator;
     }, {});
-    let totalScreeners = db.getCollection(screenerCollection).countDocuments();
-    for (let skipValue = 0; skipValue <= totalScreeners; skipValue = skipValue + batchSize) {
+    let totalDocumets = db.getCollection(screenerCollection).countDocuments();
+    for (let skipValue = 0; skipValue <= totalDocumets; skipValue = skipValue + batchSize) {
         let dataAssociationDetailedDocumentsList = [];
         let dataAssociationSummaryDocumentsList = [];
         let screenersList = db.getCollection(screenerCollection).find({}).skip(skipValue).limit(batchSize).toArray();
@@ -36,7 +36,7 @@ function dataAssociationWithEvent(clientCollection, userCollection, screenerColl
                         }
                         let createrUserTenantName = allTenantsInfo[createrUser.defaultTenantId];
                         let modifierUserTenantName = allTenantsInfo[modifierUser.defaultTenantId];
-                        let screenerDetailObject = {
+                        let detailObject = {
                             "client": {
                                 "_id": client._id,
                                 "firstName": client.firstName,
@@ -55,7 +55,7 @@ function dataAssociationWithEvent(clientCollection, userCollection, screenerColl
                             },
                             "assocType": event,
                             "assocName": event,
-                            "assocDate": client.createdAt,
+                            "assocDate": screener?.createdBy,
                             "sourceId": screener._id.toString(),
                             "timelineData": timelineData,
                             "status": "ACTIVE",
@@ -71,7 +71,7 @@ function dataAssociationWithEvent(clientCollection, userCollection, screenerColl
                                     "tenantName": createrUserTenantName,
                                     "entityId": createrUser.agency._id.toString(),
                                     "entityName": createrUser.agency.name,
-                                    "userId": createrUser?.createdBy,
+                                    "userId": screener?.createdBy,
                                     "userFullName": createrUser.firstName + " " + createrUser.lastName
                                 },
                                 "updated": {
@@ -86,46 +86,42 @@ function dataAssociationWithEvent(clientCollection, userCollection, screenerColl
                             },
                             "_class": "dataAssociationDetail"
                         };
-                        dataAssociationDetailedDocumentsList.push(screenerDetailObject);
+                        dataAssociationDetailedDocumentsList.push(detailObject);
 
                         let clientSummaryObject = db.getCollection(summaryCollection).findOne({ "client._id": client._id });
-                        //                { associations: { $elemMatch: { "user.id": screener.createdBy } } }
                         if (clientSummaryObject) {
                             let userAssociated = db.getCollection(summaryCollection).findOne({ $and: [{ _id: clientSummaryObject._id }, { associations: { $elemMatch: { "user.id": screener?.createdBy } } }] });
                             if (!userAssociated) {
                                 let newAssociations = clientSummaryObject.associations;
                                 //                                print(newAssociations.length)
                                 let userAssociationDoc = {
-                                    "user": screenerDetailObject.user,
-                                    "assocDate": screenerDetailObject.assocDate,
-                                    "status": screenerDetailObject.status
+                                    "user": detailObject.user,
+                                    "assocDate": detailObject.assocDate,
+                                    "status": detailObject.status
                                 };
                                 newAssociations.push(userAssociationDoc);
                                 try {
                                     db.getCollection(summaryCollection).updateOne({ _id: clientSummaryObject._id }, { $set: { associations: newAssociations } })
-                                    print("User added in associations Successfully..")
                                 } catch (e) {
                                     print(`Failure in updation of association of Client${client._id.toString()} with User:${screener?.createdBy}`)
                                     print(e);
                                 }
-                            } else {
-                                print("User is already associated");
                             }
                         } else {
-                            //                            print("insert a new summary object for clientTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT");
+                            //                            print("insert a new summary object for clientT");
                             let dataAssociationSummaryDoc = {
-                                "client": screenerDetailObject.client,
+                                "client": detailObject.client,
                                 "associations": [],
-                                "createdBy": screenerDetailObject.createdBy,
-                                "createdAt": screenerDetailObject.createdAt,
-                                "lastModifiedBy": screenerDetailObject.lastModifiedBy,
-                                "lastModifiedAt": screenerDetailObject.lastModifiedAt,
-                                "dataAudit": screenerDetailObject.dataAudit
+                                "createdBy": detailObject.createdBy,
+                                "createdAt": detailObject.createdAt,
+                                "lastModifiedBy": detailObject.lastModifiedBy,
+                                "lastModifiedAt": detailObject.lastModifiedAt,
+                                "dataAudit": detailObject.dataAudit
                             }
                             let associationDoc = {
-                                "user": screenerDetailObject.user,
-                                "assocDate": screenerDetailObject.assocDate,
-                                "status": screenerDetailObject.status
+                                "user": detailObject.user,
+                                "assocDate": detailObject.assocDate,
+                                "status": detailObject.status
                             }
                             dataAssociationSummaryDoc.associations.push(associationDoc);
                             dataAssociationSummaryDocumentsList.push(dataAssociationSummaryDoc);
@@ -134,15 +130,13 @@ function dataAssociationWithEvent(clientCollection, userCollection, screenerColl
                     } else {
                         print(`${+ !createrUser ? "Creater User: " + createrUser.createdBy : !modifierUser ? "Modifier User: " + screener.lastModifiedBy : ""} not present.`)
                     }
-                } else {
-                    print(`No Value in createdBy or lastModifiedBy of Screener`);
                 }
             } else {
                 print(`Client: ${screener.clientId} Not Found for Screener: ${screener._id}`);
             }
         });
 
-        let batchEndValue = skipValue+batchSize <= totalScreeners?skipValue+batchSize:totalScreeners;
+        let batchEndValue = skipValue+batchSize <= totalDocumets?skipValue+batchSize:totalDocumets;
         try {
             let detailResponse = db.getCollection(detailCollection).insertMany(dataAssociationDetailedDocumentsList);
             let summaryResponse = db.getCollection(summaryCollection).insertMany(dataAssociationSummaryDocumentsList);
