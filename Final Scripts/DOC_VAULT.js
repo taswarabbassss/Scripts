@@ -133,7 +133,7 @@ function dataAssociationWithEvent(clientCollection, userCollection, detailCollec
         let batchEndValue = skipValue + batchSize <= totalDocumets ? skipValue + batchSize : totalDocumets;
         try {
             print(detailDocumentsList.length);
-            print(summaryDocumentsList);
+            print(summaryDocumentsList.length);
             //            let detailResponse = db.getCollection(detailCollection).insertMany(detailDocumentsList);
             //            let summaryResponse = db.getCollection(summaryCollection).insertMany(summaryDocumentsList);
             //            print(`${Object.values(detailResponse.insertedIds).length} documents inserted into ${detailCollection} collection`);
