@@ -12,6 +12,8 @@ function dataAssociationWithEvent(clientCollection, userCollection, detailCollec
     let summaryDocumentsList = [];
     let totalDetailDocs = 0;
     let totalSummaryDocs = 0;
+    let userAssociatedDocs = 0;
+    let faultyDocuments = 0;
     let totalDocumets = db.getCollection(clientCollection).countDocuments();
     for (let skipValue = 0; skipValue <= totalDocumets; skipValue = skipValue + batchSize) {
         let clientsList = db.getCollection(clientCollection).find({}).skip(skipValue).limit(batchSize).toArray();
@@ -103,6 +105,8 @@ function dataAssociationWithEvent(clientCollection, userCollection, detailCollec
                                         print(`Failure in updation of association of Client ${client._id.toString()} with User:${screener ?.createdBy}`)
                                         print(e);
                                     }
+                                } else {
+                                    userAssociatedDocs++;
                                 }
                             } else {
                                 //                            print("insert a new summary object for clientT");
@@ -123,9 +127,13 @@ function dataAssociationWithEvent(clientCollection, userCollection, detailCollec
                                 summaryDocument.associations.push(associationDoc);
                                 summaryDocumentsList.push(summaryDocument);
                             }
-                        }
+                        } else {
+                        faultyDocuments++;
+                    }
 
 
+                    } else {
+                        faultyDocuments++;
                     }
                 });
 
@@ -151,6 +159,8 @@ function dataAssociationWithEvent(clientCollection, userCollection, detailCollec
                 detailDocumentsList = [];
                 summaryDocumentsList = [];
                 print(".");
+            } else {
+                faultyDocuments++;
             }
         });
 
@@ -158,6 +168,8 @@ function dataAssociationWithEvent(clientCollection, userCollection, detailCollec
         let batchEndValue = skipValue + batchSize <= totalDocumets ? skipValue + batchSize : totalDocumets;
         print(`Processed client from ${skipValue} to ${batchEndValue}`);
     }
+    print(`Total ${faultyDocuments} Documents unable to insert`);
+    print(`Total ${userAssociatedDocs} Documents User already associated`);
     print(`Total ${totalDetailDocs} Documents inserted into {detailCollection} collection`);
     print(`Total ${totalSummaryDocs} Documents inserted into {summaryCollection} collection`);
 }
