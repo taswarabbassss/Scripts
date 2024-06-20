@@ -136,28 +136,64 @@ class DataAssociation {
     this.detailDocumentsList = [];
   }
 
-  getSummaryDocument(dataAssociationDetailDoc) {
-    try {
-      let dataAssociationSummaryDoc = {
-        client: dataAssociationDetailDoc.client,
-        associations: [],
-        createdBy: dataAssociationDetailDoc.createdBy,
-        createdAt: dataAssociationDetailDoc.createdAt,
-        lastModifiedBy: dataAssociationDetailDoc.lastModifiedBy,
-        lastModifiedAt: dataAssociationDetailDoc.lastModifiedAt,
-        dataAudit: dataAssociationDetailDoc.dataAudit,
-      };
-      let associationDoc = {
-        user: dataAssociationDetailDoc.user,
-        assocDate: dataAssociationDetailDoc.assocDate,
-        status: dataAssociationDetailDoc.status,
-      };
-      dataAssociationSummaryDoc.associations.push(associationDoc);
-      return dataAssociationSummaryDoc;
-    } catch (e) {
-      print("Error in getSummaryDocument method");
-      print(e);
-      return {};
+  addOrUpdateSummaryDocument(client, associatorUserId, dataAssociationDetailDoc) {
+    let clientSummaryObject = db
+      .getCollection(summaryCollection)
+      .findOne({ "client._id": client._id });
+    if (clientSummaryObject) {
+      let userAssociated = db.getCollection(summaryCollection).findOne({
+        $and: [
+          { _id: clientSummaryObject._id },
+          {
+            associations: { $elemMatch: { "user.id": associatorUserId } },
+          },
+        ],
+      });
+      if (!userAssociated) {
+        let newAssociations = clientSummaryObject.associations;
+        //                                print(newAssociations.length)
+        let userAssociationDoc = {
+          user: dataAssociationDetailDoc.user,
+          assocDate: dataAssociationDetailDoc.assocDate,
+          status: dataAssociationDetailDoc.status,
+        };
+        newAssociations.push(userAssociationDoc);
+        try {
+          db.getCollection(summaryCollection).updateOne(
+            { _id: clientSummaryObject._id },
+            { $set: { associations: newAssociations } }
+          );
+        } catch (e) {
+          print(
+            `Failure in updation of association of Client${client._id.toString()} with User:${associatorUserId}`
+          );
+          print(e);
+        }
+      }
+    } else {
+      //                            print("insert a new summary object for clientT");
+      try {
+        let dataAssociationSummaryDoc = {
+          client: dataAssociationDetailDoc.client,
+          associations: [],
+          createdBy: dataAssociationDetailDoc.createdBy,
+          createdAt: dataAssociationDetailDoc.createdAt,
+          lastModifiedBy: dataAssociationDetailDoc.lastModifiedBy,
+          lastModifiedAt: dataAssociationDetailDoc.lastModifiedAt,
+          dataAudit: dataAssociationDetailDoc.dataAudit,
+        };
+        let associationDoc = {
+          user: dataAssociationDetailDoc.user,
+          assocDate: dataAssociationDetailDoc.assocDate,
+          status: dataAssociationDetailDoc.status,
+        };
+        dataAssociationSummaryDoc.associations.push(associationDoc);
+        this.summaryDocumentsList.push(dataAssociationSummaryDoc);
+      } catch (e) {
+        print("Error in addOrUpdateSummaryDocument method");
+        print(e);
+        return {};
+      }
     }
   }
 
@@ -189,13 +225,13 @@ class DataAssociation {
         .toArray();
       clientsList.forEach((client) => {
         if (!client.createdBy === client.lastModifiedBy) {
-          // let createrUserId = ObjectId(client.createdBy);
-          // let createrUser = this.getUserWithId(createrUserId);
+          let createrUserId = ObjectId(client.lastModifiedBy);
+          let modifierUserId = ObjectId(client.lastModifiedBy);
+          let createrUser = this.getUserWithId(createrUserId);
           // let modifierUser =
           // createrUserId.toString() === modifierUserId.toString()
           //     ? createrUser
           //     : this.getUserWithId(modifierUserId);
-          let modifierUserId = ObjectId(client.lastModifiedBy);
           let modifierUser = this.getUserWithId(modifierUserId);
           if (createrUser && modifierUser) {
             let tenantNames = this.setDefaultTenantAndGetNames(
@@ -211,10 +247,7 @@ class DataAssociation {
               );
               this.detailDocumentsList.push(dataAssociationDetailDoc);
               if (dataAssociationDetailDoc) {
-                let dataAssociationSummaryDoc = this.getSummaryDocument(
-                  dataAssociationDetailDoc
-                );
-                this.summaryDocumentsList.push(dataAssociationSummaryDoc);
+                this.addOrUpdateSummaryDocument(client, client?.lastModifiedBy,det);
               }
             } catch (e) {
               this.detailFaultyDocs++;
