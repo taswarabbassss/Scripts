@@ -216,6 +216,11 @@ class DataAssociation {
   getUserWithId(userId) {
       return this.allUsers[userId];
   }
+  detailDocumentAlreadyExists(userId,clientId){
+      let detailResponse = this.db
+              .getCollection(this.detailCollection).findOne({"client._id":ObjectId(clientId), "user.id":userId});
+       print(detailResponse?print("DONE"):print("NILL"));
+  }
   mainDataAssociationMethod() {
       for (
           let skipValue = 0;
@@ -245,6 +250,7 @@ class DataAssociation {
                          createrUser,
                          createrUser
                        );
+                       this.detailDocumentAlreadyExists(createrUserId,client.clientId);
                   //     try {
                   //       let dataAssociationDetailDoc = this.getDetailDocument(
                   //         client,
