@@ -48,14 +48,16 @@ class DataAssociation {
         modifierUser.defaultTenantId = this.currentTenantId;
       }
     }
-
-    return {
-      createrUserTenantName: this.allTenantsInfo[createrUser.defaultTenantId],
-      modifierUserTenantName: this.allTenantsInfo[modifierUser.defaultTenantId],
-    };
   }
 
-  getDetailDocument(client, createrUser, modifierUser, tenantNames) {
+  getDetailDocument(
+    client,
+    user,
+    createrUser,
+    modifierUser,
+    eventObject,
+    tenantNames
+  ) {
     try {
       return {
         client: {
@@ -64,41 +66,46 @@ class DataAssociation {
           lastName: client?.lastName,
         },
         user: {
-          id: client?.createdBy,
-          firstName: createrUser?.firstName,
-          lastName: createrUser?.lastName,
-          fullName: createrUser?.firstName + " " + createrUser?.lastName,
+          id: user._id.toString(),
+          firstName: user?.firstName,
+          lastName: user?.lastName,
+          fullName: user?.firstName + " " + createrUser?.lastName,
         },
-        agency: createrUser?.agency,
+        agency: {
+          _id: user?.agency?._id,
+          name: user?.agency?.name,
+          nickname: user?.agency?.nickname,
+        },
         assocType: this.event,
         assocName: this.event,
-        assocDate: client?.createdAt,
-        sourceId: client?._id.toString(),
+        assocDate: eventObject?.createdAt,
+        sourceId: eventObject?._id.toString(),
         timelineData: this.timelineData,
         status: "ACTIVE",
-        createdBy: client?.createdBy,
-        createdAt: client?.createdAt,
-        lastModifiedBy: client?.lastModifiedBy,
-        lastModifiedAt: client?.lastModifiedAt,
+        createdBy: eventObject?.createdBy,
+        createdAt: eventObject?.createdAt,
+        lastModifiedBy: eventObject?.lastModifiedBy,
+        lastModifiedAt: eventObject?.lastModifiedAt,
         dataStatus: "ACTIVE",
         dataAudit: {
           created: {
-            when: client?.createdAt,
+            when: eventObject?.createdAt,
             tenantId: createrUser?.defaultTenantId,
-            tenantName: tenantNames.createrUserTenantName,
+            tenantName: this.allTenantsInfo[createrUser.defaultTenantId],
             entityId: createrUser?.agency._id.toString(),
             entityName: createrUser?.agency.name,
-            userId: client?.createdBy,
+            userId: createrUser._id.toString(),
             userFullName: createrUser?.firstName + " " + createrUser?.lastName,
           },
           updated: {
-            when: client?.lastModifiedAt,
-            tenantId: modifierUser.defaultTenantId,
-            tenantName: tenantNames.modifierUserTenantName,
-            entityId: modifierUser.agency._id.toString(),
-            entityName: modifierUser.agency.name,
-            userId: client?.lastModifiedBy,
-            userFullName: modifierUser.firstName + " " + modifierUser.lastName,
+            when: eventObject?.lastModifiedAt,
+            tenantId: modifierUser?.defaultTenantId,
+            tenantName: this.allTenantsInfo[modifierUser?.defaultTenantId],
+            entityId: modifierUser?.agency._id.toString(),
+            entityName: modifierUser?.agency.name,
+            userId: modifierUser?._id.toString(),
+            userFullName:
+              modifierUser?.firstName + " " + modifierUser?.lastName,
           },
         },
         _class: "dataAssociationDetail",
@@ -235,41 +242,53 @@ class DataAssociation {
         .limit(this.batchSize)
         .toArray();
       clientsList.forEach((client) => {
-        client.affiliatedUsers.forEach((affliatedUser) => {
-          const createrUserId = affliatedUser.id;
-          //   let modifierUserId = ObjectId(client.lastModifiedBy);
-          let createrUser = this.getUserWithId(createrUserId);
-          //   // let modifierUser =
-          //   // createrUserId.toString() === modifierUserId.toString()
-          //   //     ? createrUser
-          //   //     : this.getUserWithId(modifierUserId);
-          //   let modifierUser = this.getUserWithId(modifierUserId);
-          if (createrUser) {
-            let tenantNames = this.setDefaultTenantAndGetNames(
-              createrUser,
-              createrUser
-            );
-            this.detailDocumentAlreadyExists(createrUserId, client.clientId);
-            //     try {
-            //       let dataAssociationDetailDoc = this.getDetailDocument(
-            //         client,
-            //         createrUser,
-            //         modifierUser,
-            //         tenantNames
-            //       );
-            //       this.detailDocumentsList.push(dataAssociationDetailDoc);
-            //       if (dataAssociationDetailDoc) {
-            //         this.addOrUpdateSummaryDocument(client, client?.lastModifiedBy,det);
-            //       }
-            //     } catch (e) {
-            //       this.detailFaultyDocs++;
-            //       print(`Error Occured For ${client._id.toString()} Client`);
-            //       print(e);
-            //     }
-          } else {
-            this.detailFaultyDocs++;
-          }
-        });
+        const createrUserId = client.id;
+        const modifierUserId = ObjectId(client.lastModifiedBy);
+        let createrUser = this.getUserWithId(createrUserId);
+        let modifierUser =
+          createrUserId.toString() === modifierUserId.toString()
+            ? createrUser
+            : this.getUserWithId(modifierUserId);
+        if (createrUser && modifierUser) {
+          this.setDefaultTenantAndGetNames(createrUser, modifierUser);
+
+          client.affiliatedUsers.forEach((affliatedUser) => {
+            const user = this.allUsers[affliatedUser.id];
+            if (user) {
+              if (
+                !this.detailDocumentAlreadyExists(
+                  user._id.toString(),
+                  client.clientId
+                )
+              ) {
+                try {
+                  print("OK");
+                  //                                let dataAssociationDetailDoc = this.getDetailDocument(
+                  //                                    client,
+                  //                                    createrUser,
+                  //                                    createrUser,
+                  //                                    tenantNames
+                  //                                );
+                  //                                this.detailDocumentsList.push(dataAssociationDetailDoc);
+                  //                                if (dataAssociationDetailDoc) {
+                  //                                    this.addOrUpdateSummaryDocument(client, client ?.lastModifiedBy, det);
+                  //                                }
+                } catch (e) {
+                  this.detailFaultyDocs++;
+                  print(`Error Occured For ${client._id.toString()} Client`);
+                  print(e);
+                }
+              } else {
+                print("ALREADY");
+                this.detailFaultyDocs++;
+              }
+            } else {
+              this.detailFaultyDocs++;
+            }
+          });
+        } else {
+          this.detailFaultyDocs++;
+        }
       });
 
       // let batchEndValue =
@@ -286,7 +305,7 @@ class DataAssociation {
       // print(`Processed client from ${skipValue} to ${batchEndValue}`);
     }
 
-    this.finalLogs();
+    //        this.finalLogs();
   }
 }
 
