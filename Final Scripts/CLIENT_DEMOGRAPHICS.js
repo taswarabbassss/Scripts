@@ -266,6 +266,10 @@ class DataAssociation {
               )
             ) {
               try {
+                  
+                print("-------------NEW DETAIL--------------");
+                print("USER: "+ modifierUserId);
+                print("CLIENT: " + sourceDocument._id)
                 // const dataAssociationDetailDoc = this.getDetailDocument(
                 //   clientObj,
                 //   affiliatedUser,
@@ -288,6 +292,11 @@ class DataAssociation {
               }
             } else {
               this.detailFaultyDocs++;
+
+                print("-------------DETAIL ALREADY EXISTS--------------");
+                print("USER: "+ modifierUserId);
+                print("CLNT: " + sourceDocument._id)
+              
               // try {
               //   const detailDoc = this.getDetailDocument(
               //     clientObj,
@@ -333,7 +342,7 @@ class DataAssociation {
 }
 
 const userCollection = "user";
-let sourceCollection = "Tasawar_crn_client";
+let sourceCollection = "crn_client";
 let allTenantsInfo = db
   .getSiblingDB("qa-shared-ninepatch-agency")
   .getCollection("tenant")
