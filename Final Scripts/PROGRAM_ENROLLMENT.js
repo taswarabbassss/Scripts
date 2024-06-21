@@ -61,10 +61,10 @@ class DataAssociation {
           lastName: client?.lastName,
         },
         user: {
-          id: user._id.toString(),
+          id: user?._id,
           firstName: user?.firstName,
           lastName: user?.lastName,
-          fullName: user?.firstName + " " + createrUser?.lastName,
+          fullName: user?.firstName + " " + user?.lastName,
         },
         agency: {
           _id: user?.agency?._id,
@@ -74,7 +74,7 @@ class DataAssociation {
         assocType: this.event,
         assocName: this.event,
         assocDate: eventObject?.createdAt,
-        sourceId: eventObject?._id.toString(),
+        sourceId: eventObject?._id?.toString(),
         timelineData: this.timelineData,
         status: "ACTIVE",
         createdBy: eventObject?.createdBy,
@@ -87,16 +87,16 @@ class DataAssociation {
             when: eventObject?.createdAt,
             tenantId: createrUser?.defaultTenantId,
             tenantName: this.allTenantsInfo[createrUser.defaultTenantId],
-            entityId: createrUser?.agency._id.toString(),
+            entityId: createrUser?.agency?._id?.toString(),
             entityName: createrUser?.agency.name,
-            userId: createrUser._id.toString(),
+            userId: createrUser?._id?.toString(),
             userFullName: createrUser?.firstName + " " + createrUser?.lastName,
           },
           updated: {
             when: eventObject?.lastModifiedAt,
             tenantId: modifierUser?.defaultTenantId,
             tenantName: this.allTenantsInfo[modifierUser?.defaultTenantId],
-            entityId: modifierUser?.agency._id.toString(),
+            entityId: modifierUser?.agency?._id?.toString(),
             entityName: modifierUser?.agency.name,
             userId: modifierUser?._id.toString(),
             userFullName:
@@ -252,20 +252,27 @@ class DataAssociation {
         const clientObj = this.getClientWithId(eventObj.clientId);
         if (createrUser && modifierUser && clientObj) {
           this.setDefaultTenantAndGetNames(createrUser, modifierUser);
-
+          //           print(eventObj.affiliatedUsers.length);
           eventObj.affiliatedUsers.forEach((affliatedUser) => {
-            const user = this.allUsers[affliatedUser.id];
-            print(user);
-            if (user) {
+            const affiliatedUser = this.allUsers[affliatedUser.id];
+            print(affiliatedUser._id);
+            if (affiliatedUser) {
               if (
                 !this.detailDocumentAlreadyExists(
-                  user._id.toString(),
+                  affiliatedUser._id.toString(),
                   eventObj.clientId
                 )
               ) {
+                print(affiliatedUser._id);
                 try {
-                                                 let dataAssociationDetailDoc = this.getDetailDocument(clientObj,user,createrUser,modifierUser,eventObj);
-                                                 this.detailDocumentsList.push(dataAssociationDetailDoc);
+                  const dataAssociationDetailDoc = this.getDetailDocument(
+                    clientObj,
+                    affiliatedUser,
+                    createrUser,
+                    modifierUser,
+                    eventObj
+                  );
+                  this.detailDocumentsList.push(dataAssociationDetailDoc);
                   //                                if (dataAssociationDetailDoc) {
                   //                                    this.addOrUpdateSummaryDocument(eventObj, eventObj ?.lastModifiedBy, det);
                   //                                }
@@ -282,8 +289,6 @@ class DataAssociation {
               this.detailFaultyDocs++;
             }
           });
-
-          print(this.detailDocumentsList.length)
         } else {
           this.detailFaultyDocs++;
         }
@@ -302,7 +307,6 @@ class DataAssociation {
       // print(".");
       // print(`Processed eventObj from ${skipValue} to ${batchEndValue}`);
     }
-
     //        this.finalLogs();
   }
 }
@@ -343,7 +347,7 @@ let userDb = db.getSiblingDB("qa-shared-ninepatch-user");
 const dataAssociationObject = new DataAssociation(
   db,
   eventCollection,
-  "Tasawar_crn_client",
+  "crn_client",
   userCollection,
   "Tasawar_data_association_detail",
   "Tasawar_data_association_summary",
