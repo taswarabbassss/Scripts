@@ -52,14 +52,7 @@ class DataAssociation {
     }
   }
 
-  getDetailDocument(
-    client,
-    user,
-    createrUser,
-    modifierUser,
-    eventObject,
-    tenantNames
-  ) {
+  getDetailDocument(client, user, createrUser, modifierUser, eventObject) {
     try {
       return {
         client: {
@@ -225,6 +218,11 @@ class DataAssociation {
   getUserWithId(userId) {
     return this.allUsers[userId];
   }
+  getClientWithId(clientId) {
+    return this.db
+      .getCollection(this.clientCollection)
+      .findOne({ _id: ObjectId(clientId) }, { firstName: 1, lastName: 1 });
+  }
   detailDocumentAlreadyExists(userId, clientId) {
     let detailResponse = this.db
       .getCollection(this.detailCollection)
@@ -237,48 +235,43 @@ class DataAssociation {
       skipValue <= totalDocumets;
       skipValue = skipValue + this.batchSize
     ) {
-      let clientsList = db
+      let eventDocumentsList = db
         .getCollection(this.eventCollection)
         .find({})
         .skip(skipValue)
         .limit(this.batchSize)
         .toArray();
-      clientsList.forEach((client) => {
-        const createrUserId = ObjectId(client.createdBy);
-        const modifierUserId = ObjectId(client.lastModifiedBy);
-        let createrUser = this.getUserWithId(createrUserId);
-        let modifierUser =
+      eventDocumentsList.forEach((eventObj) => {
+        const createrUserId = ObjectId(eventObj.createdBy);
+        const modifierUserId = ObjectId(eventObj.lastModifiedBy);
+        const createrUser = this.getUserWithId(createrUserId);
+        const modifierUser =
           createrUserId.toString() === modifierUserId.toString()
             ? createrUser
             : this.getUserWithId(modifierUserId);
-        if (createrUser && modifierUser) {
+        const clientObj = this.getClientWithId(eventObj.clientId);
+        if (createrUser && modifierUser && clientObj) {
           this.setDefaultTenantAndGetNames(createrUser, modifierUser);
 
-          client.affiliatedUsers.forEach((affliatedUser) => {
+          eventObj.affiliatedUsers.forEach((affliatedUser) => {
             const user = this.allUsers[affliatedUser.id];
             print(user);
             if (user) {
               if (
                 !this.detailDocumentAlreadyExists(
                   user._id.toString(),
-                  client.clientId
+                  eventObj.clientId
                 )
               ) {
                 try {
-                  print("OK");
-                  //                                let dataAssociationDetailDoc = this.getDetailDocument(
-                  //                                    client,
-                  //                                    createrUser,
-                  //                                    createrUser,
-                  //                                    tenantNames
-                  //                                );
-                  //                                this.detailDocumentsList.push(dataAssociationDetailDoc);
+                                                 let dataAssociationDetailDoc = this.getDetailDocument(clientObj,user,createrUser,modifierUser,eventObj);
+                                                 this.detailDocumentsList.push(dataAssociationDetailDoc);
                   //                                if (dataAssociationDetailDoc) {
-                  //                                    this.addOrUpdateSummaryDocument(client, client ?.lastModifiedBy, det);
+                  //                                    this.addOrUpdateSummaryDocument(eventObj, eventObj ?.lastModifiedBy, det);
                   //                                }
                 } catch (e) {
                   this.detailFaultyDocs++;
-                  print(`Error Occured For ${client._id.toString()} Client`);
+                  print(`Error Occured For ${eventObj._id.toString()} Client`);
                   print(e);
                 }
               } else {
@@ -289,6 +282,8 @@ class DataAssociation {
               this.detailFaultyDocs++;
             }
           });
+
+          print(this.detailDocumentsList.length)
         } else {
           this.detailFaultyDocs++;
         }
@@ -305,7 +300,7 @@ class DataAssociation {
       //   this.insertSummaryDocuments(skipValue, batchEndValue);
       // }
       // print(".");
-      // print(`Processed client from ${skipValue} to ${batchEndValue}`);
+      // print(`Processed eventObj from ${skipValue} to ${batchEndValue}`);
     }
 
     //        this.finalLogs();
@@ -348,6 +343,7 @@ let userDb = db.getSiblingDB("qa-shared-ninepatch-user");
 const dataAssociationObject = new DataAssociation(
   db,
   eventCollection,
+  "Tasawar_crn_client",
   userCollection,
   "Tasawar_data_association_detail",
   "Tasawar_data_association_summary",
