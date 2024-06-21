@@ -151,7 +151,6 @@ class DataAssociation {
       });
       if (!userAssociated) {
         let newAssociations = clientSummaryObject.associations;
-        //                                print(newAssociations.length)
         let userAssociationDoc = {
           user: dataAssociationDetailDoc.user,
           assocDate: dataAssociationDetailDoc.assocDate,
