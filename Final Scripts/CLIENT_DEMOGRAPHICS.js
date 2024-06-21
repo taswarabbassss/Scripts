@@ -1,7 +1,7 @@
 class DataAssociation {
   constructor(
     db,
-    eventCollection,
+    sourceCollection,
     clientCollection,
     userCollection,
     detailCollection,
@@ -15,7 +15,7 @@ class DataAssociation {
     userDb
   ) {
     this.db = db;
-    this.eventCollection = eventCollection;
+    this.sourceCollection = sourceCollection;
     this.clientCollection = clientCollection;
     this.userCollection = userCollection;
     this.detailCollection = detailCollection;
@@ -240,7 +240,7 @@ class DataAssociation {
       skipValue = skipValue + this.batchSize
     ) {
       let sourceDocuments = db
-        .getCollection(this.eventCollection)
+        .getCollection(this.sourceCollection)
         .find({})
         .skip(skipValue)
         .limit(this.batchSize)
@@ -343,7 +343,7 @@ class DataAssociation {
 }
 
 const userCollection = "user";
-let eventCollection = "Tasawar_program_enrollment";
+let sourceCollection = "Tasawar_program_enrollment";
 let allTenantsInfo = db
   .getSiblingDB("qa-shared-ninepatch-agency")
   .getCollection("tenant")
@@ -372,12 +372,12 @@ const allUsers = db
     accumilator[user._id.toString()] = user;
     return accumilator;
   }, {});
-let totalDocumets = db.getCollection(eventCollection).countDocuments();
+let totalDocumets = db.getCollection(sourceCollection).countDocuments();
 let userDb = db.getSiblingDB("qa-shared-ninepatch-user");
 
 const dataAssociationObject = new DataAssociation(
   db,
-  eventCollection,
+  sourceCollection,
   "crn_client",
   userCollection,
   "Tasawar_data_association_detail",
