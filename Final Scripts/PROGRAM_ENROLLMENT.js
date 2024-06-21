@@ -61,7 +61,7 @@ class DataAssociation {
           lastName: client?.lastName,
         },
         user: {
-          id: user?._id,
+          id: user?._id + "",
           firstName: user?.firstName,
           lastName: user?.lastName,
           fullName: user?.firstName + " " + user?.lastName,
@@ -74,7 +74,7 @@ class DataAssociation {
         assocType: this.event,
         assocName: this.event,
         assocDate: eventObject?.createdAt,
-        sourceId: eventObject?._id?.toString(),
+        sourceId: eventObject?._id + "",
         timelineData: this.timelineData,
         status: "ACTIVE",
         createdBy: eventObject?.createdBy,
@@ -87,18 +87,18 @@ class DataAssociation {
             when: eventObject?.createdAt,
             tenantId: createrUser?.defaultTenantId,
             tenantName: this.allTenantsInfo[createrUser.defaultTenantId],
-            entityId: createrUser?.agency?._id?.toString(),
+            entityId: createrUser?.agency?._id + "",
             entityName: createrUser?.agency.name,
-            userId: createrUser?._id?.toString(),
+            userId: createrUser?._id + "",
             userFullName: createrUser?.firstName + " " + createrUser?.lastName,
           },
           updated: {
             when: eventObject?.lastModifiedAt,
             tenantId: modifierUser?.defaultTenantId,
             tenantName: this.allTenantsInfo[modifierUser?.defaultTenantId],
-            entityId: modifierUser?.agency?._id?.toString(),
+            entityId: modifierUser?.agency?._id + "",
             entityName: modifierUser?.agency.name,
-            userId: modifierUser?._id.toString(),
+            userId: modifierUser?._id + "",
             userFullName:
               modifierUser?.firstName + " " + modifierUser?.lastName,
           },
@@ -174,7 +174,7 @@ class DataAssociation {
           );
         } catch (e) {
           print(
-            `Failure in updation of association of Client${client._id.toString()} with User:${associatorUserId}`
+            `Failure in updation of association of Client${client._id + ""} with User:${associatorUserId}`
           );
           print(e);
         }
@@ -255,11 +255,10 @@ class DataAssociation {
           //           print(eventObj.affiliatedUsers.length);
           eventObj.affiliatedUsers.forEach((affliatedUser) => {
             const affiliatedUser = this.allUsers[affliatedUser.id];
-            print(affiliatedUser._id);
             if (affiliatedUser) {
               if (
                 !this.detailDocumentAlreadyExists(
-                  affiliatedUser._id.toString(),
+                  affiliatedUser._id + "",
                   eventObj.clientId
                 )
               ) {
@@ -278,7 +277,7 @@ class DataAssociation {
                   //                                }
                 } catch (e) {
                   this.detailFaultyDocs++;
-                  print(`Error Occured For ${eventObj._id.toString()} Client`);
+                  print(`Error Occured For ${eventObj._id + ""} Client`);
                   print(e);
                 }
               } else {
@@ -306,6 +305,7 @@ class DataAssociation {
       // }
       // print(".");
       // print(`Processed eventObj from ${skipValue} to ${batchEndValue}`);
+      print(this.detailDocumentsList);
     }
     //        this.finalLogs();
   }
