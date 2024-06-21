@@ -239,13 +239,13 @@ class DataAssociation {
       skipValue <= totalDocumets;
       skipValue = skipValue + this.batchSize
     ) {
-      let sourceDocuments = db
+      let sourceDocumentsList = db
         .getCollection(this.sourceCollection)
         .find({})
         .skip(skipValue)
         .limit(this.batchSize)
         .toArray();
-      sourceDocuments.forEach((sourceDocument) => {
+      sourceDocumentsList.forEach((sourceDocument) => {
         const createrUserId = ObjectId(sourceDocument.createdBy);
         const modifierUserId = ObjectId(sourceDocument.lastModifiedBy);
         const createrUser = this.getUserWithId(createrUserId);
@@ -257,7 +257,7 @@ class DataAssociation {
         if (createrUser && modifierUser && clientObj) {
           this.setDefaultTenantAndGetNames(createrUser, modifierUser);
           sourceDocument.affiliatedUsers.forEach((affliatedUser) => {
-            const affiliatedUser = this.allUsers[affliatedUser.id];
+            const affiliatedUser = this.getUserWithId(affliatedUser.id);
             if (affiliatedUser) {
               if (
                 !this.detailDocumentAlreadyExists(
@@ -288,26 +288,26 @@ class DataAssociation {
                 }
               } else {
                 this.detailFaultyDocs++;
-              }
-              try {
-                const detailDoc = this.getDetailDocument(
-                  clientObj,
-                  affiliatedUser,
-                  createrUser,
-                  modifierUser,
-                  sourceDocument
-                );
-                if (detailDoc) {
-                  this.addOrUpdateSummaryDocument(
+                try {
+                  const detailDoc = this.getDetailDocument(
                     clientObj,
-                    affiliatedUser._id + "",
-                    detailDoc
+                    affiliatedUser,
+                    createrUser,
+                    modifierUser,
+                    sourceDocument
                   );
+                  if (detailDoc) {
+                    this.addOrUpdateSummaryDocument(
+                      clientObj,
+                      affiliatedUser._id + "",
+                      detailDoc
+                    );
+                  }
+                } catch (e) {
+                  this.summaryFaultyDocs++;
+                  print(`Error Occured For ${sourceDocument._id + ""} Document`);
+                  print(e);
                 }
-              } catch (e) {
-                this.summaryFaultyDocs++;
-                print(`Error Occured For ${sourceDocument._id + ""} Document`);
-                print(e);
               }
             } else {
               this.detailFaultyDocs++;
