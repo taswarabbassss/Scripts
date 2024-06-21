@@ -1,6 +1,7 @@
 class DataAssociation {
   constructor(
     db,
+    eventCollection,
     clientCollection,
     userCollection,
     detailCollection,
@@ -14,6 +15,7 @@ class DataAssociation {
     userDb
   ) {
     this.db = db;
+    this.eventCollection = eventCollection;
     this.clientCollection = clientCollection;
     this.userCollection = userCollection;
     this.detailCollection = detailCollection;
@@ -236,13 +238,13 @@ class DataAssociation {
       skipValue = skipValue + this.batchSize
     ) {
       let clientsList = db
-        .getCollection(this.clientCollection)
+        .getCollection(this.eventCollection)
         .find({})
         .skip(skipValue)
         .limit(this.batchSize)
         .toArray();
       clientsList.forEach((client) => {
-        const createrUserId = client.id;
+        const createrUserId = ObjectId(client.createdBy);
         const modifierUserId = ObjectId(client.lastModifiedBy);
         let createrUser = this.getUserWithId(createrUserId);
         let modifierUser =
@@ -254,6 +256,7 @@ class DataAssociation {
 
           client.affiliatedUsers.forEach((affliatedUser) => {
             const user = this.allUsers[affliatedUser.id];
+            print(user);
             if (user) {
               if (
                 !this.detailDocumentAlreadyExists(
@@ -310,7 +313,7 @@ class DataAssociation {
 }
 
 const userCollection = "user";
-let clientCollection = "Tasawar_program_enrollment";
+let eventCollection = "Tasawar_program_enrollment";
 let allTenantsInfo = db
   .getSiblingDB("qa-shared-ninepatch-agency")
   .getCollection("tenant")
@@ -339,12 +342,12 @@ const allUsers = db
     accumilator[user._id.toString()] = user;
     return accumilator;
   }, {});
-let totalDocumets = db.getCollection(clientCollection).countDocuments();
+let totalDocumets = db.getCollection(eventCollection).countDocuments();
 let userDb = db.getSiblingDB("qa-shared-ninepatch-user");
 
 const dataAssociationObject = new DataAssociation(
   db,
-  clientCollection,
+  eventCollection,
   userCollection,
   "Tasawar_data_association_detail",
   "Tasawar_data_association_summary",
