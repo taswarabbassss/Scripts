@@ -53,7 +53,7 @@ class DataAssociation {
     }
   }
 
-  getDetailDocument(client, user, createrUser, modifierUser, eventObject) {
+  getDetailDocument(client, user, createrUser, modifierUser, sourceDocument) {
     try {
       return {
         client: {
@@ -74,18 +74,18 @@ class DataAssociation {
         },
         assocType: this.event,
         assocName: this.event,
-        assocDate: eventObject?.createdAt,
-        sourceId: eventObject?._id + "",
+        assocDate: sourceDocument?.createdAt,
+        sourceId: sourceDocument?._id + "",
         timelineData: this.timelineData,
         status: "ACTIVE",
-        createdBy: eventObject?.createdBy,
-        createdAt: eventObject?.createdAt,
-        lastModifiedBy: eventObject?.lastModifiedBy,
-        lastModifiedAt: eventObject?.lastModifiedAt,
+        createdBy: sourceDocument?.createdBy,
+        createdAt: sourceDocument?.createdAt,
+        lastModifiedBy: sourceDocument?.lastModifiedBy,
+        lastModifiedAt: sourceDocument?.lastModifiedAt,
         dataStatus: "ACTIVE",
         dataAudit: {
           created: {
-            when: eventObject?.createdAt,
+            when: sourceDocument?.createdAt,
             tenantId: createrUser?.defaultTenantId,
             tenantName: this.allTenantsInfo[createrUser.defaultTenantId],
             entityId: createrUser?.agency?._id + "",
@@ -94,7 +94,7 @@ class DataAssociation {
             userFullName: createrUser?.firstName + " " + createrUser?.lastName,
           },
           updated: {
-            when: eventObject?.lastModifiedAt,
+            when: sourceDocument?.lastModifiedAt,
             tenantId: modifierUser?.defaultTenantId,
             tenantName: this.allTenantsInfo[modifierUser?.defaultTenantId],
             entityId: modifierUser?.agency?._id + "",
@@ -245,24 +245,24 @@ class DataAssociation {
         .skip(skipValue)
         .limit(this.batchSize)
         .toArray();
-      eventDocumentsList.forEach((eventObj) => {
-        const createrUserId = ObjectId(eventObj.createdBy);
-        const modifierUserId = ObjectId(eventObj.lastModifiedBy);
+      eventDocumentsList.forEach((sourceDocument) => {
+        const createrUserId = ObjectId(sourceDocument.createdBy);
+        const modifierUserId = ObjectId(sourceDocument.lastModifiedBy);
         const createrUser = this.getUserWithId(createrUserId);
         const modifierUser =
           createrUserId.toString() === modifierUserId.toString()
             ? createrUser
             : this.getUserWithId(modifierUserId);
-        const clientObj = this.getClientWithId(eventObj.clientId);
+        const clientObj = this.getClientWithId(sourceDocument.clientId);
         if (createrUser && modifierUser && clientObj) {
           this.setDefaultTenantAndGetNames(createrUser, modifierUser);
-          eventObj.affiliatedUsers.forEach((affliatedUser) => {
+          sourceDocument.affiliatedUsers.forEach((affliatedUser) => {
             const affiliatedUser = this.allUsers[affliatedUser.id];
             if (affiliatedUser) {
               if (
                 !this.detailDocumentAlreadyExists(
                   affiliatedUser._id + "",
-                  eventObj.clientId
+                  sourceDocument.clientId
                 )
               ) {
                 try {
@@ -271,7 +271,7 @@ class DataAssociation {
                     affiliatedUser,
                     createrUser,
                     modifierUser,
-                    eventObj
+                    sourceDocument
                   );
                   this.detailDocumentsList.push(dataAssociationDetailDoc);
                   if (dataAssociationDetailDoc) {
@@ -283,7 +283,7 @@ class DataAssociation {
                   }
                 } catch (e) {
                   this.detailFaultyDocs++;
-                  print(`Error Occured For ${eventObj._id + ""} Document`);
+                  print(`Error Occured For ${sourceDocument._id + ""} Document`);
                   print(e);
                 }
               } else {
@@ -295,7 +295,7 @@ class DataAssociation {
                   affiliatedUser,
                   createrUser,
                   modifierUser,
-                  eventObj
+                  sourceDocument
                 );
                 if (detailDoc) {
                   this.addOrUpdateSummaryDocument(
@@ -306,7 +306,7 @@ class DataAssociation {
                 }
               } catch (e) {
                 this.summaryFaultyDocs++;
-                print(`Error Occured For ${eventObj._id + ""} Document`);
+                print(`Error Occured For ${sourceDocument._id + ""} Document`);
                 print(e);
               }
             } else {
@@ -336,7 +336,7 @@ class DataAssociation {
         skipValue + this.batchSize <= totalDocumets
           ? skipValue + this.batchSize
           : totalDocumets;
-      print(`Processed eventObj from ${skipValue} to ${batchEndValue}`);
+      print(`Processed sourceDocument from ${skipValue} to ${batchEndValue}`);
     }
     this.finalLogs();
   }
