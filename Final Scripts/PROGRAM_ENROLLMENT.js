@@ -239,13 +239,13 @@ class DataAssociation {
       skipValue <= totalDocumets;
       skipValue = skipValue + this.batchSize
     ) {
-      let eventDocumentsList = db
+      let sourceDocuments = db
         .getCollection(this.eventCollection)
         .find({})
         .skip(skipValue)
         .limit(this.batchSize)
         .toArray();
-      eventDocumentsList.forEach((sourceDocument) => {
+      sourceDocuments.forEach((sourceDocument) => {
         const createrUserId = ObjectId(sourceDocument.createdBy);
         const modifierUserId = ObjectId(sourceDocument.lastModifiedBy);
         const createrUser = this.getUserWithId(createrUserId);
