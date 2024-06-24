@@ -1,18 +1,16 @@
 class DataAssociation {
   constructor(
     db,
-    sourceCollection,
-    clientCollection,
-    userCollection,
-    detailCollection,
-    summaryCollection,
-    event,
-    currentTenantId,
-    batchSize,
-    allTenantsInfo,
-    allUsers,
-    totalDocumets,
-    userDb
+    {
+      sourceCollection,
+      clientCollection,
+      userCollection,
+      detailCollection,
+      summaryCollection,
+      event,
+      currentTenantId,
+      batchSize,
+    }
   ) {
     this.db = db;
     this.sourceCollection = sourceCollection;
@@ -23,9 +21,8 @@ class DataAssociation {
     this.event = event;
     this.batchSize = batchSize;
     this.currentTenantId = currentTenantId;
-    this.allTenantsInfo = allTenantsInfo;
-    this.allUsers = allUsers;
-    this.userDb = userDb;
+    this.allTenantsInfo = null;
+    this.allUsers = null;
     this.timelineData = true;
     this.detailDocumentsList = [];
     this.summaryDocumentsList = [];
@@ -33,7 +30,7 @@ class DataAssociation {
     this.detailFaultyDocs = 0;
     this.summaryFaultyDocs = 0;
     this.totalSummaryDocs = 0;
-    this.totalDocumets = totalDocumets;
+    this.totalDocumets = 0;
   }
 
   setDefaultTenantAndGetNames(createrUser, modifierUser) {
@@ -127,7 +124,6 @@ class DataAssociation {
     }
     this.summaryDocumentsList = [];
   }
-
   insertDetailDocuments(skipValue, batchEndValue) {
     try {
       let detailResponse = db
@@ -227,13 +223,26 @@ class DataAssociation {
   getClientWithId(clientId) {
     return this.db
       .getCollection(this.clientCollection)
-      .findOne({ _id: ObjectId(clientId) }, { firstName: 1, lastName: 1 });
+      .findOne(
+        { _id: this.getObjectId(clientId) },
+        { firstName: 1, lastName: 1 }
+      );
   }
   detailDocumentAlreadyExists(userId, clientId) {
     let detailResponse = this.db
       .getCollection(this.detailCollection)
-      .findOne({ "client._id": ObjectId(clientId), "user.id": userId });
+      .findOne({ "client._id": this.getObjectId(clientId), "user.id": userId });
     return detailResponse ? true : false;
+  }
+  getObjectId(id) {
+    let objectId = "";
+    try {
+      objectId = ObjectId(id);
+    } catch (e) {
+      print("OBJECT ID ERROR");
+      print(e);
+    }
+    return objectId;
   }
   mainDataAssociationMethod() {
     for (
@@ -248,14 +257,15 @@ class DataAssociation {
         .limit(this.batchSize)
         .toArray();
       sourceDocumentsList.forEach((sourceDocument) => {
-        const createrUserId = ObjectId(sourceDocument.createdBy);
-        const modifierUserId = ObjectId(sourceDocument.lastModifiedBy);
-        if (createrUserId.toString() === modifierUserId.toString()) {
+        const createrUserId = this.getObjectId(sourceDocument.createdBy);
+        const modifierUserId = this.getObjectId(sourceDocument.lastModifiedBy);
+        if (createrUserId + "" !== modifierUserId + "") {
           const createrUser = this.getUserWithId(createrUserId);
           const modifierUser =
-            createrUserId.toString() === modifierUserId.toString()
+            createrUserId + "" === modifierUserId + ""
               ? createrUser
               : this.getUserWithId(modifierUserId);
+          const affiliatedUser = modifierUser;
           const clientObj = sourceDocument;
           if (createrUser && modifierUser && clientObj) {
             this.setDefaultTenantAndGetNames(createrUser, modifierUser);
@@ -266,25 +276,21 @@ class DataAssociation {
               )
             ) {
               try {
-                  
-                print("-------------NEW DETAIL--------------");
-                print("USER: "+ modifierUserId);
-                print("CLIENT: " + sourceDocument._id)
-                // const dataAssociationDetailDoc = this.getDetailDocument(
-                //   clientObj,
-                //   affiliatedUser,
-                //   createrUser,
-                //   modifierUser,
-                //   sourceDocument
-                // );
-                // this.detailDocumentsList.push(dataAssociationDetailDoc);
-                // if (dataAssociationDetailDoc) {
-                //   this.addOrUpdateSummaryDocument(
-                //     clientObj,
-                //     affiliatedUser._id + "",
-                //     dataAssociationDetailDoc
-                //   );
-                // }
+                const dataAssociationDetailDoc = this.getDetailDocument(
+                  clientObj,
+                  affiliatedUser,
+                  createrUser,
+                  modifierUser,
+                  sourceDocument
+                );
+                this.detailDocumentsList.push(dataAssociationDetailDoc);
+                if (dataAssociationDetailDoc) {
+                  this.addOrUpdateSummaryDocument(
+                    clientObj,
+                    affiliatedUser._id + "",
+                    dataAssociationDetailDoc
+                  );
+                }
               } catch (e) {
                 this.detailFaultyDocs++;
                 print(`Error Occured For ${sourceDocument._id + ""} Document`);
@@ -292,31 +298,26 @@ class DataAssociation {
               }
             } else {
               this.detailFaultyDocs++;
-
-                print("-------------DETAIL ALREADY EXISTS--------------");
-                print("USER: "+ modifierUserId);
-                print("CLNT: " + sourceDocument._id)
-              
-              // try {
-              //   const detailDoc = this.getDetailDocument(
-              //     clientObj,
-              //     affiliatedUser,
-              //     createrUser,
-              //     modifierUser,
-              //     sourceDocument
-              //   );
-              //   if (detailDoc) {
-              //     this.addOrUpdateSummaryDocument(
-              //       clientObj,
-              //       affiliatedUser._id + "",
-              //       detailDoc
-              //     );
-              //   }
-              // } catch (e) {
-              //   this.summaryFaultyDocs++;
-              //   print(`Error Occured For ${sourceDocument._id + ""} Document`);
-              //   print(e);
-              // }
+              try {
+                const detailDoc = this.getDetailDocument(
+                  clientObj,
+                  affiliatedUser,
+                  createrUser,
+                  modifierUser,
+                  sourceDocument
+                );
+                if (detailDoc) {
+                  this.addOrUpdateSummaryDocument(
+                    clientObj,
+                    affiliatedUser._id + "",
+                    detailDoc
+                  );
+                }
+              } catch (e) {
+                this.summaryFaultyDocs++;
+                print(`Error Occured For ${sourceDocument._id + ""} Document`);
+                print(e);
+              }
             }
             print(".");
           } else {
@@ -325,69 +326,67 @@ class DataAssociation {
         }
       });
 
-          let batchEndValue =
-          skipValue + this.batchSize <= totalDocumets
-            ? skipValue + this.batchSize
-            : totalDocumets;
-        if (this.detailDocumentsList.length > 0) {
-          this.insertDetailDocuments(skipValue, batchEndValue);
-        }
-        if (this.summaryDocumentsList.length > 0) {
-          this.insertSummaryDocuments(skipValue, batchEndValue);
-        }
+      let batchEndValue =
+        skipValue + this.batchSize <= totalDocumets
+          ? skipValue + this.batchSize
+          : totalDocumets;
+      if (this.detailDocumentsList.length > 0) {
+        this.insertDetailDocuments(skipValue, batchEndValue);
+      }
+      if (this.summaryDocumentsList.length > 0) {
+        this.insertSummaryDocuments(skipValue, batchEndValue);
+      }
       print(`Processed sourceDocument from ${skipValue} to ${batchEndValue}`);
     }
     this.finalLogs();
   }
+
+  postCreationSetup() {
+    this.allTenantsInfo = this.db
+      .getSiblingDB("qa-shared-ninepatch-agency")
+      .getCollection("tenant")
+      .find({}, { name: 1 })
+      .toArray()
+      .reduce((accumilator, tenant) => {
+        accumilator[tenant._id] = tenant.name;
+        return accumilator;
+      }, {});
+    this.allUsers = this.db
+      .getSiblingDB("qa-shared-ninepatch-user")
+      .getCollection(this.userCollection)
+      .find(
+        {},
+        {
+          firstName: 1,
+          lastName: 1,
+          middleName: 1,
+          agency: 1,
+          defaultTenantId: 1,
+          tenantIds: 1,
+        }
+      )
+      .toArray()
+      .reduce((accumilator, user) => {
+        accumilator[user._id + ""] = user;
+        return accumilator;
+      }, {});
+    this.totalDocumets = this.db
+      .getCollection(this.sourceCollection)
+      .countDocuments();
+  }
 }
 
-const userCollection = "user";
-let sourceCollection = "crn_client";
-let allTenantsInfo = db
-  .getSiblingDB("qa-shared-ninepatch-agency")
-  .getCollection("tenant")
-  .find({}, { name: 1 })
-  .toArray()
-  .reduce((accumilator, tenant) => {
-    accumilator[tenant._id] = tenant.name;
-    return accumilator;
-  }, {});
-const allUsers = db
-  .getSiblingDB("qa-shared-ninepatch-user")
-  .getCollection(userCollection)
-  .find(
-    {},
-    {
-      firstName: 1,
-      lastName: 1,
-      middleName: 1,
-      agency: 1,
-      defaultTenantId: 1,
-      tenantIds: 1,
-    }
-  )
-  .toArray()
-  .reduce((accumilator, user) => {
-    accumilator[user._id.toString()] = user;
-    return accumilator;
-  }, {});
-let totalDocumets = db.getCollection(sourceCollection).countDocuments();
-let userDb = db.getSiblingDB("qa-shared-ninepatch-user");
+const constructorParameters = {
+  sourceCollection: "crn_client",
+  clientCollection: "crn_client",
+  userCollection: "user",
+  detailCollection: "Tasawar_data_association_detail",
+  summaryCollection: "Tasawar_data_association_summary",
+  event: "CLIENT_DEMOGRAPHICS",
+  currentTenantId: "5f58aaa8149b3f0006e2e1f7",
+  batchSize: 50,
+};
 
-const dataAssociationObject = new DataAssociation(
-  db,
-  sourceCollection,
-  "crn_client",
-  userCollection,
-  "Tasawar_data_association_detail",
-  "Tasawar_data_association_summary",
-  "PROGRAM_ENROLLMENT",
-  "5f58aaa8149b3f0006e2e1f7",
-  50,
-  allTenantsInfo,
-  allUsers,
-  totalDocumets,
-  userDb
-);
-
+const dataAssociationObject = new DataAssociation(db, constructorParameters);
+dataAssociationObject.postCreationSetup();
 dataAssociationObject.mainDataAssociationMethod();

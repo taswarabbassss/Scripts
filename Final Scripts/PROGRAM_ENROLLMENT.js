@@ -1,18 +1,16 @@
 class DataAssociation {
   constructor(
     db,
-    sourceCollection,
-    clientCollection,
-    userCollection,
-    detailCollection,
-    summaryCollection,
-    event,
-    currentTenantId,
-    batchSize,
-    allTenantsInfo,
-    allUsers,
-    totalDocumets,
-    userDb
+    {
+      sourceCollection,
+      clientCollection,
+      userCollection,
+      detailCollection,
+      summaryCollection,
+      event,
+      currentTenantId,
+      batchSize,
+    }
   ) {
     this.db = db;
     this.sourceCollection = sourceCollection;
@@ -23,9 +21,8 @@ class DataAssociation {
     this.event = event;
     this.batchSize = batchSize;
     this.currentTenantId = currentTenantId;
-    this.allTenantsInfo = allTenantsInfo;
-    this.allUsers = allUsers;
-    this.userDb = userDb;
+    this.allTenantsInfo = null;
+    this.allUsers = null;
     this.timelineData = true;
     this.detailDocumentsList = [];
     this.summaryDocumentsList = [];
@@ -33,7 +30,7 @@ class DataAssociation {
     this.detailFaultyDocs = 0;
     this.summaryFaultyDocs = 0;
     this.totalSummaryDocs = 0;
-    this.totalDocumets = totalDocumets;
+    this.totalDocumets = 0;
   }
 
   setDefaultTenantAndGetNames(createrUser, modifierUser) {
@@ -162,51 +159,53 @@ class DataAssociation {
           ],
         });
       if (!userAssociated) {
-            let newAssociations = clientSummaryObject.associations;
-            let userAssociationDoc = {
-              user: dataAssociationDetailDoc.user,
-              assocDate: dataAssociationDetailDoc.assocDate,
-              status: dataAssociationDetailDoc.status,
-            };
-            newAssociations.push(userAssociationDoc);
-            try {
-              this.db.getCollection(this.summaryCollection).updateOne(
-                { _id: clientSummaryObject._id },
-                { $set: { associations: newAssociations } }
-              );
-            } catch (e) {
-              print(
-                `Failure in updation of association of Client${
-                  client._id + ""
-                } with User:${associatorUserId}`
-              );
-              print(e);
-            }
-      } 
+        let newAssociations = clientSummaryObject.associations;
+        let userAssociationDoc = {
+          user: dataAssociationDetailDoc.user,
+          assocDate: dataAssociationDetailDoc.assocDate,
+          status: dataAssociationDetailDoc.status,
+        };
+        newAssociations.push(userAssociationDoc);
+        try {
+          this.db
+            .getCollection(this.summaryCollection)
+            .updateOne(
+              { _id: clientSummaryObject._id },
+              { $set: { associations: newAssociations } }
+            );
+        } catch (e) {
+          print(
+            `Failure in updation of association of Client${
+              client._id + ""
+            } with User:${associatorUserId}`
+          );
+          print(e);
+        }
+      }
     } else {
       // print("insert a new summary object for clientT");
-        try {
-          let dataAssociationSummaryDoc = {
-            client: dataAssociationDetailDoc?.client,
-            associations: [],
-            createdBy: dataAssociationDetailDoc?.createdBy,
-            createdAt: dataAssociationDetailDoc?.createdAt,
-            lastModifiedBy: dataAssociationDetailDoc?.lastModifiedBy,
-            lastModifiedAt: dataAssociationDetailDoc?.lastModifiedAt,
-            dataAudit: dataAssociationDetailDoc?.dataAudit,
-          };
-          let associationDoc = {
-            user: dataAssociationDetailDoc?.user,
-            assocDate: dataAssociationDetailDoc?.assocDate,
-            status: dataAssociationDetailDoc?.status,
-          };
-          dataAssociationSummaryDoc.associations.push(associationDoc);
-          this.summaryDocumentsList.push(dataAssociationSummaryDoc);
-        } catch (e) {
-          print("Error in addOrUpdateSummaryDocument method");
-          print(e);
-          return {};
-        }
+      try {
+        let dataAssociationSummaryDoc = {
+          client: dataAssociationDetailDoc?.client,
+          associations: [],
+          createdBy: dataAssociationDetailDoc?.createdBy,
+          createdAt: dataAssociationDetailDoc?.createdAt,
+          lastModifiedBy: dataAssociationDetailDoc?.lastModifiedBy,
+          lastModifiedAt: dataAssociationDetailDoc?.lastModifiedAt,
+          dataAudit: dataAssociationDetailDoc?.dataAudit,
+        };
+        let associationDoc = {
+          user: dataAssociationDetailDoc?.user,
+          assocDate: dataAssociationDetailDoc?.assocDate,
+          status: dataAssociationDetailDoc?.status,
+        };
+        dataAssociationSummaryDoc.associations.push(associationDoc);
+        this.summaryDocumentsList.push(dataAssociationSummaryDoc);
+      } catch (e) {
+        print("Error in addOrUpdateSummaryDocument method");
+        print(e);
+        return {};
+      }
     }
   }
 
@@ -283,7 +282,9 @@ class DataAssociation {
                   }
                 } catch (e) {
                   this.detailFaultyDocs++;
-                  print(`Error Occured For ${sourceDocument._id + ""} Document`);
+                  print(
+                    `Error Occured For ${sourceDocument._id + ""} Document`
+                  );
                   print(e);
                 }
               } else {
@@ -305,7 +306,9 @@ class DataAssociation {
                   }
                 } catch (e) {
                   this.summaryFaultyDocs++;
-                  print(`Error Occured For ${sourceDocument._id + ""} Document`);
+                  print(
+                    `Error Occured For ${sourceDocument._id + ""} Document`
+                  );
                   print(e);
                 }
               }
@@ -314,23 +317,21 @@ class DataAssociation {
             }
           });
 
-
-           let batchEndValue =
-        skipValue + this.batchSize <= totalDocumets
-          ? skipValue + this.batchSize
-          : totalDocumets;
-      if (this.detailDocumentsList.length > 0) {
-        this.insertDetailDocuments(skipValue, batchEndValue);
-      }
-      if (this.summaryDocumentsList.length > 0) {
-        this.insertSummaryDocuments(skipValue, batchEndValue);
-      }
-      print(".");
+          let batchEndValue =
+            skipValue + this.batchSize <= totalDocumets
+              ? skipValue + this.batchSize
+              : totalDocumets;
+          if (this.detailDocumentsList.length > 0) {
+            this.insertDetailDocuments(skipValue, batchEndValue);
+          }
+          if (this.summaryDocumentsList.length > 0) {
+            this.insertSummaryDocuments(skipValue, batchEndValue);
+          }
+          print(".");
         } else {
           this.detailFaultyDocs++;
         }
       });
-
 
       let batchEndValue =
         skipValue + this.batchSize <= totalDocumets
@@ -375,20 +376,17 @@ const allUsers = db
 let totalDocumets = db.getCollection(sourceCollection).countDocuments();
 let userDb = db.getSiblingDB("qa-shared-ninepatch-user");
 
-const dataAssociationObject = new DataAssociation(
-  db,
-  sourceCollection,
-  "crn_client",
-  userCollection,
-  "Tasawar_data_association_detail",
-  "Tasawar_data_association_summary",
-  "PROGRAM_ENROLLMENT",
-  "5f58aaa8149b3f0006e2e1f7",
-  50,
-  allTenantsInfo,
-  allUsers,
-  totalDocumets,
-  userDb
-);
+const constructorParameters = {
+  sourceCollection: "Tasawar_program_enrollment",
+  clientCollection: "crn_client",
+  userCollection: "user",
+  detailCollection: "Tasawar_data_association_detail",
+  summaryCollection: "Tasawar_data_association_summary",
+  event: "PROGRAM_ENROLLMENT",
+  currentTenantId: "5f58aaa8149b3f0006e2e1f7",
+  batchSize: 50,
+};
 
+const dataAssociationObject = new DataAssociation(db, constructorParameters);
+dataAssociationObject.postCreationSetup();
 dataAssociationObject.mainDataAssociationMethod();
