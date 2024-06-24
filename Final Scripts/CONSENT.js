@@ -308,7 +308,7 @@ class DataAssociation {
       ? skipValue + this.batchSize
       : this.totalDocumets;
     }  
-    postCreationSetup() {
+    postCreationSetup(findQuery) {
       this.allTenantsInfo = this.db
         .getSiblingDB("qa-shared-ninepatch-agency")
         .getCollection("tenant")
@@ -339,7 +339,7 @@ class DataAssociation {
         }, {});
       this.totalDocumets = this.db
         .getCollection(this.sourceCollection)
-        .countDocuments();
+        .countDocuments(findQuery);
     }
     mainDataAssociationMethod(findQuery) {
         for (
@@ -423,7 +423,7 @@ class DataAssociation {
   };
   
   const dataAssociationObject = new DataAssociation(db, constructorParameters);
-  dataAssociationObject.postCreationSetup();
   const findQuery = {"consentInformation.type":{$ne:"NO_CONSENT"}};
+  dataAssociationObject.postCreationSetup(findQuery);
   dataAssociationObject.mainDataAssociationMethod(findQuery);
   
