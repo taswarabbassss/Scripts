@@ -226,12 +226,15 @@ class DataAssociation {
   getClientWithId(clientId) {
     return this.db
       .getCollection(this.clientCollection)
-      .findOne({ _id: ObjectId(clientId) }, { firstName: 1, lastName: 1 });
+      .findOne(
+        { _id: this.getObjectId(clientId) },
+        { firstName: 1, lastName: 1 }
+      );
   }
   detailDocumentAlreadyExists(userId, clientId) {
     let detailResponse = this.db
       .getCollection(this.detailCollection)
-      .findOne({ "client._id": ObjectId(clientId), "user.id": userId });
+      .findOne({ "client._id": this.getObjectId(clientId), "user.id": userId });
     return detailResponse ? true : false;
   }
   postCreationSetup() {
@@ -267,10 +270,77 @@ class DataAssociation {
       .getCollection(this.sourceCollection)
       .countDocuments();
   }
+  getObjectId(id) {
+    let objectId = "";
+    try {
+      objectId = ObjectId(id);
+    } catch (e) {
+      print("OBJECT ID ERROR");
+      print(e);
+    }
+    return objectId;
+  }
+  addNewDetailAndSummaryDocument(
+    clientObj,
+    sourceDocument,
+    createrUser,
+    modifierUser,
+    affiliatedUser
+  ) {
+    try {
+      const dataAssociationDetailDoc = this.getDetailDocument(
+        clientObj,
+        affiliatedUser,
+        createrUser,
+        modifierUser,
+        sourceDocument
+      );
+      this.detailDocumentsList.push(dataAssociationDetailDoc);
+      if (dataAssociationDetailDoc) {
+        this.addOrUpdateSummaryDocument(
+          clientObj,
+          affiliatedUser._id + "",
+          dataAssociationDetailDoc
+        );
+      }
+    } catch (e) {
+      this.detailFaultyDocs++;
+      print(`Error Occured For ${sourceDocument._id + ""} Document`);
+      print(e);
+    }
+  }
+  addSummaryDocumentWhenDetailDocAlreadyExists(
+    clientObj,
+    sourceDocument,
+    createrUser,
+    modifierUser,
+    affiliatedUser
+  ) {
+    try {
+      const dataAssociationDetailDoc = this.getDetailDocument(
+        clientObj,
+        affiliatedUser,
+        createrUser,
+        modifierUser,
+        sourceDocument
+      );
+      if (dataAssociationDetailDoc) {
+        this.addOrUpdateSummaryDocument(
+          clientObj,
+          affiliatedUser._id + "",
+          dataAssociationDetailDoc
+        );
+      }
+    } catch (e) {
+      this.summaryFaultyDocs++;
+      print(`Error Occured For ${sourceDocument._id + ""} Document`);
+      print(e);
+    }
+  }
   mainDataAssociationMethod() {
     for (
       let skipValue = 0;
-      skipValue <= totalDocumets;
+      skipValue <= this.totalDocumets;
       skipValue = skipValue + this.batchSize
     ) {
       let sourceDocumentsList = db
@@ -280,8 +350,8 @@ class DataAssociation {
         .limit(this.batchSize)
         .toArray();
       sourceDocumentsList.forEach((sourceDocument) => {
-        const createrUserId = ObjectId(sourceDocument.createdBy);
-        const modifierUserId = ObjectId(sourceDocument.lastModifiedBy);
+        const createrUserId = this.getObjectId(sourceDocument.createdBy);
+        const modifierUserId = this.getObjectId(sourceDocument.lastModifiedBy);
         const createrUser = this.getUserWithId(createrUserId);
         const modifierUser =
           createrUserId.toString() === modifierUserId.toString()
@@ -299,53 +369,22 @@ class DataAssociation {
                   sourceDocument.clientId
                 )
               ) {
-                try {
-                  const dataAssociationDetailDoc = this.getDetailDocument(
-                    clientObj,
-                    affiliatedUser,
-                    createrUser,
-                    modifierUser,
-                    sourceDocument
-                  );
-                  this.detailDocumentsList.push(dataAssociationDetailDoc);
-                  if (dataAssociationDetailDoc) {
-                    this.addOrUpdateSummaryDocument(
-                      clientObj,
-                      affiliatedUser._id + "",
-                      dataAssociationDetailDoc
-                    );
-                  }
-                } catch (e) {
-                  this.detailFaultyDocs++;
-                  print(
-                    `Error Occured For ${sourceDocument._id + ""} Document`
-                  );
-                  print(e);
-                }
+                this.addNewDetailAndSummaryDocument(
+                  clientObj,
+                  sourceDocument,
+                  createrUser,
+                  modifierUser,
+                  affiliatedUser
+                );
               } else {
                 this.detailFaultyDocs++;
-                try {
-                  const detailDoc = this.getDetailDocument(
-                    clientObj,
-                    affiliatedUser,
-                    createrUser,
-                    modifierUser,
-                    sourceDocument
-                  );
-                  if (detailDoc) {
-                    this.addOrUpdateSummaryDocument(
-                      clientObj,
-                      affiliatedUser._id + "",
-                      detailDoc
-                    );
-                  }
-                } catch (e) {
-                  this.summaryFaultyDocs++;
-                  print(
-                    `Error Occured For ${sourceDocument._id + ""} Document`
-                  );
-                  print(e);
-                }
+                this.addSummaryDocumentWhenDetailDocAlreadyExists(
+                  clientObj,
+                  sourceDocument,
+                  createrUser,
+                  modifierUser,
+                  affiliatedUser
+                );
               }
             } else {
               this.detailFaultyDocs++;
@@ -353,9 +392,9 @@ class DataAssociation {
           });
 
           let batchEndValue =
-            skipValue + this.batchSize <= totalDocumets
+            skipValue + this.batchSize <= this.totalDocumets
               ? skipValue + this.batchSize
-              : totalDocumets;
+              : this.totalDocumets;
           if (this.detailDocumentsList.length > 0) {
             this.insertDetailDocuments(skipValue, batchEndValue);
           }
@@ -369,16 +408,14 @@ class DataAssociation {
       });
 
       let batchEndValue =
-        skipValue + this.batchSize <= totalDocumets
+        skipValue + this.batchSize <= this.totalDocumets
           ? skipValue + this.batchSize
-          : totalDocumets;
+          : this.totalDocumets;
       print(`Processed sourceDocument from ${skipValue} to ${batchEndValue}`);
     }
     this.finalLogs();
   }
-
 }
-
 
 const constructorParameters = {
   sourceCollection: "Tasawar_program_enrollment",

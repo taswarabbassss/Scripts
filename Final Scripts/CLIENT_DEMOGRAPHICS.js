@@ -246,10 +246,67 @@ class DataAssociation {
     }
     return objectId;
   }
+  addNewDetailAndSummaryDocument(
+    clientObj,
+    sourceDocument,
+    createrUser,
+    modifierUser,
+    affiliatedUser
+  ) {
+    try {
+      const dataAssociationDetailDoc = this.getDetailDocument(
+        clientObj,
+        affiliatedUser,
+        createrUser,
+        modifierUser,
+        sourceDocument
+      );
+      this.detailDocumentsList.push(dataAssociationDetailDoc);
+      if (dataAssociationDetailDoc) {
+        this.addOrUpdateSummaryDocument(
+          clientObj,
+          affiliatedUser._id + "",
+          dataAssociationDetailDoc
+        );
+      }
+    } catch (e) {
+      this.detailFaultyDocs++;
+      print(`Error Occured For ${sourceDocument._id + ""} Document`);
+      print(e);
+    }
+  }
+  addSummaryDocumentWhenDetailDocAlreadyExists(
+    clientObj,
+    sourceDocument,
+    createrUser,
+    modifierUser,
+    affiliatedUser
+  ) {
+    try {
+      const dataAssociationDetailDoc = this.getDetailDocument(
+        clientObj,
+        affiliatedUser,
+        createrUser,
+        modifierUser,
+        sourceDocument
+      );
+      if (dataAssociationDetailDoc) {
+        this.addOrUpdateSummaryDocument(
+          clientObj,
+          affiliatedUser._id + "",
+          dataAssociationDetailDoc
+        );
+      }
+    } catch (e) {
+      this.summaryFaultyDocs++;
+      print(`Error Occured For ${sourceDocument._id + ""} Document`);
+      print(e);
+    }
+  }
   mainDataAssociationMethod() {
     for (
       let skipValue = 0;
-      skipValue <= totalDocumets;
+      skipValue <= this.totalDocumets;
       skipValue = skipValue + this.batchSize
     ) {
       let sourceDocumentsList = db
@@ -277,49 +334,22 @@ class DataAssociation {
                 sourceDocument._id + ""
               )
             ) {
-              try {
-                const dataAssociationDetailDoc = this.getDetailDocument(
-                  clientObj,
-                  affiliatedUser,
-                  createrUser,
-                  modifierUser,
-                  sourceDocument
-                );
-                this.detailDocumentsList.push(dataAssociationDetailDoc);
-                if (dataAssociationDetailDoc) {
-                  this.addOrUpdateSummaryDocument(
-                    clientObj,
-                    affiliatedUser._id + "",
-                    dataAssociationDetailDoc
-                  );
-                }
-              } catch (e) {
-                this.detailFaultyDocs++;
-                print(`Error Occured For ${sourceDocument._id + ""} Document`);
-                print(e);
-              }
+              this.addNewDetailAndSummaryDocument(
+                clientObj,
+                sourceDocument,
+                createrUser,
+                modifierUser,
+                affiliatedUser
+              );
             } else {
               this.detailFaultyDocs++;
-              try {
-                const detailDoc = this.getDetailDocument(
-                  clientObj,
-                  affiliatedUser,
-                  createrUser,
-                  modifierUser,
-                  sourceDocument
-                );
-                if (detailDoc) {
-                  this.addOrUpdateSummaryDocument(
-                    clientObj,
-                    affiliatedUser._id + "",
-                    detailDoc
-                  );
-                }
-              } catch (e) {
-                this.summaryFaultyDocs++;
-                print(`Error Occured For ${sourceDocument._id + ""} Document`);
-                print(e);
-              }
+              this.addSummaryDocumentWhenDetailDocAlreadyExists(
+                clientObj,
+                sourceDocument,
+                createrUser,
+                modifierUser,
+                affiliatedUser
+              );
             }
             print(".");
           } else {
@@ -329,9 +359,9 @@ class DataAssociation {
       });
 
       let batchEndValue =
-        skipValue + this.batchSize <= totalDocumets
+        skipValue + this.batchSize <= this.totalDocumets
           ? skipValue + this.batchSize
-          : totalDocumets;
+          : this.totalDocumets;
       if (this.detailDocumentsList.length > 0) {
         this.insertDetailDocuments(skipValue, batchEndValue);
       }
