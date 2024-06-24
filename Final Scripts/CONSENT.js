@@ -233,7 +233,7 @@ class DataAssociation {
     detailDocumentAlreadyExists(userId, clientId) {
       let detailResponse = this.db
         .getCollection(this.detailCollection)
-        .findOne({ "client._id": this.getObjectId(clientId), "user.id": userId });
+        .findOne({ "client._id": this.getObjectId(clientId), "user.id": userId, "assocType": this.event });
       return detailResponse ? true : false;
     }
     getObjectId(id) {
@@ -340,6 +340,7 @@ class DataAssociation {
       this.totalDocumets = this.db
         .getCollection(this.sourceCollection)
         .countDocuments(findQuery);
+        this.totalDocumets = 10;
     }
     mainDataAssociationMethod(findQuery) {
         for (
@@ -363,8 +364,9 @@ class DataAssociation {
                 createrUserId + "" === modifierUserId + ""
                   ? createrUser
                   : this.getUserWithId(modifierUserId);
-              const affiliatedUser = modifierUser;
+              const affiliatedUser = this.getUserWithId(sourceDocument.consentInformation.userId);
               const clientObj = sourceDocument;
+              print(affiliatedUser._id+"");
               
             //   if (createrUser && modifierUser && clientObj) {
             //     this.setDefaultTenantAndGetNames(createrUser, modifierUser);
@@ -417,7 +419,7 @@ class DataAssociation {
     userCollection: "user",
     detailCollection: "Tasawar_data_association_detail",
     summaryCollection: "Tasawar_data_association_summary",
-    event: "CLIENT_DEMOGRAPHICS",
+    event: "CONSENT",
     currentTenantId: "5f58aaa8149b3f0006e2e1f7",
     batchSize: 50,
   };
