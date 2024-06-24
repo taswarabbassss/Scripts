@@ -209,12 +209,14 @@ class DataAssociation {
   }
 
   finalLogs() {
-    print(`Total ${this.detailFaultyDocs} Documents unable to Insert`);
+    print(`Total ${this.totalDocumets}: Documents`);
+    print(`${this.detailFaultyDocs}: Detail faulty Documents`);
+    print(`${this.summaryFaultyDocs}: Summary faulty Documents`);
     print(
-      `Total ${this.totalDetailDocs} Documents inserted into {this.detailCollection} collection`
+      `${this.totalDetailDocs} Documents inserted into ${this.detailCollection} collection`
     );
     print(
-      `Total ${this.totalSummaryDocs} Documents inserted into {this.summaryCollection} collection`
+      `${this.totalSummaryDocs} Documents inserted into ${this.summaryCollection} collection`
     );
   }
   getUserWithId(userId) {

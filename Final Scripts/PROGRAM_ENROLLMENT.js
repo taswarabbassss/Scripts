@@ -210,12 +210,14 @@ class DataAssociation {
   }
 
   finalLogs() {
-    print(`Total ${this.detailFaultyDocs} Documents unable to Insert`);
+    print(`Total ${this.totalDocumets}: Documents`);
+    print(`${this.detailFaultyDocs}: Detail faulty Documents`);
+    print(`${this.summaryFaultyDocs}: Summary faulty Documents`);
     print(
-      `Total ${this.totalDetailDocs} Documents inserted into {this.detailCollection} collection`
+      `${this.totalDetailDocs} Documents inserted into ${this.detailCollection} collection`
     );
     print(
-      `Total ${this.totalSummaryDocs} Documents inserted into {this.summaryCollection} collection`
+      `${this.totalSummaryDocs} Documents inserted into ${this.summaryCollection} collection`
     );
   }
   getUserWithId(userId) {
@@ -231,6 +233,39 @@ class DataAssociation {
       .getCollection(this.detailCollection)
       .findOne({ "client._id": ObjectId(clientId), "user.id": userId });
     return detailResponse ? true : false;
+  }
+  postCreationSetup() {
+    this.allTenantsInfo = this.db
+      .getSiblingDB("qa-shared-ninepatch-agency")
+      .getCollection("tenant")
+      .find({}, { name: 1 })
+      .toArray()
+      .reduce((accumilator, tenant) => {
+        accumilator[tenant._id] = tenant.name;
+        return accumilator;
+      }, {});
+    this.allUsers = this.db
+      .getSiblingDB("qa-shared-ninepatch-user")
+      .getCollection(this.userCollection)
+      .find(
+        {},
+        {
+          firstName: 1,
+          lastName: 1,
+          middleName: 1,
+          agency: 1,
+          defaultTenantId: 1,
+          tenantIds: 1,
+        }
+      )
+      .toArray()
+      .reduce((accumilator, user) => {
+        accumilator[user._id + ""] = user;
+        return accumilator;
+      }, {});
+    this.totalDocumets = this.db
+      .getCollection(this.sourceCollection)
+      .countDocuments();
   }
   mainDataAssociationMethod() {
     for (
@@ -341,40 +376,9 @@ class DataAssociation {
     }
     this.finalLogs();
   }
+
 }
 
-const userCollection = "user";
-let sourceCollection = "Tasawar_program_enrollment";
-let allTenantsInfo = db
-  .getSiblingDB("qa-shared-ninepatch-agency")
-  .getCollection("tenant")
-  .find({}, { name: 1 })
-  .toArray()
-  .reduce((accumilator, tenant) => {
-    accumilator[tenant._id] = tenant.name;
-    return accumilator;
-  }, {});
-const allUsers = db
-  .getSiblingDB("qa-shared-ninepatch-user")
-  .getCollection(userCollection)
-  .find(
-    {},
-    {
-      firstName: 1,
-      lastName: 1,
-      middleName: 1,
-      agency: 1,
-      defaultTenantId: 1,
-      tenantIds: 1,
-    }
-  )
-  .toArray()
-  .reduce((accumilator, user) => {
-    accumilator[user._id.toString()] = user;
-    return accumilator;
-  }, {});
-let totalDocumets = db.getCollection(sourceCollection).countDocuments();
-let userDb = db.getSiblingDB("qa-shared-ninepatch-user");
 
 const constructorParameters = {
   sourceCollection: "Tasawar_program_enrollment",
