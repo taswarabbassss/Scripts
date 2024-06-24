@@ -303,6 +303,11 @@ class DataAssociation {
       print(e);
     }
   }
+  getBatchEndValue(skipValue){
+    return skipValue + this.batchSize <= this.totalDocumets
+    ? skipValue + this.batchSize
+    : this.totalDocumets;
+  }
   mainDataAssociationMethod() {
     for (
       let skipValue = 0;
@@ -358,10 +363,7 @@ class DataAssociation {
         }
       });
 
-      let batchEndValue =
-        skipValue + this.batchSize <= this.totalDocumets
-          ? skipValue + this.batchSize
-          : this.totalDocumets;
+      const batchEndValue = getBatchEndValue(skipValue);
       if (this.detailDocumentsList.length > 0) {
         this.insertDetailDocuments(skipValue, batchEndValue);
       }
