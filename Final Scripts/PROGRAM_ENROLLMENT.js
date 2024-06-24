@@ -234,7 +234,7 @@ class DataAssociation {
   detailDocumentAlreadyExists(userId, clientId) {
     let detailResponse = this.db
       .getCollection(this.detailCollection)
-      .findOne({ "client._id": this.getObjectId(clientId), "user.id": userId });
+      .findOne({ "client._id": this.getObjectId(clientId), "user.id": userId, "assocType": this.event });
     return detailResponse ? true : false;
   }
   postCreationSetup() {
