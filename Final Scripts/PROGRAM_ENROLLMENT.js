@@ -396,7 +396,7 @@ class DataAssociation {
             }
           });
 
-          const batchEndValue = getBatchEndValue(skipValue);
+          const batchEndValue = this.getBatchEndValue(skipValue);
           if (this.detailDocumentsList.length > 0) {
             this.insertDetailDocuments(skipValue, batchEndValue);
           }
