@@ -341,7 +341,7 @@ class DataAssociation {
         .getCollection(this.sourceCollection)
         .countDocuments();
     }
-    mainDataAssociationMethod() {
+    mainDataAssociationMethod(findQuery) {
         for (
           let skipValue = 0;
           skipValue <= this.totalDocumets;
@@ -349,10 +349,11 @@ class DataAssociation {
         ) {
           let sourceDocumentsList = db
             .getCollection(this.sourceCollection)
-            .find({})
+            .find(findQuery)
             .skip(skipValue)
             .limit(this.batchSize)
             .toArray();
+            print(sourceDocumentsList.length);
           sourceDocumentsList.forEach((sourceDocument) => {
             const createrUserId = this.getObjectId(sourceDocument.createdBy);
             const modifierUserId = this.getObjectId(sourceDocument.lastModifiedBy);
@@ -364,35 +365,36 @@ class DataAssociation {
                   : this.getUserWithId(modifierUserId);
               const affiliatedUser = modifierUser;
               const clientObj = sourceDocument;
-              if (createrUser && modifierUser && clientObj) {
-                this.setDefaultTenantAndGetNames(createrUser, modifierUser);
-                if (
-                  !this.detailDocumentAlreadyExists(
-                    modifierUserId + "",
-                    sourceDocument._id + ""
-                  )
-                ) {
-                  this.addNewDetailAndSummaryDocument(
-                    clientObj,
-                    sourceDocument,
-                    createrUser,
-                    modifierUser,
-                    affiliatedUser
-                  );
-                } else {
-                  this.detailFaultyDocs++;
-                  this.addSummaryDocumentWhenDetailDocAlreadyExists(
-                    clientObj,
-                    sourceDocument,
-                    createrUser,
-                    modifierUser,
-                    affiliatedUser
-                  );
-                }
-                print(".");
-              } else {
-                this.detailFaultyDocs++;
-              }
+              
+            //   if (createrUser && modifierUser && clientObj) {
+            //     this.setDefaultTenantAndGetNames(createrUser, modifierUser);
+            //     if (
+            //       !this.detailDocumentAlreadyExists(
+            //         modifierUserId + "",
+            //         sourceDocument._id + ""
+            //       )
+            //     ) {
+            //       this.addNewDetailAndSummaryDocument(
+            //         clientObj,
+            //         sourceDocument,
+            //         createrUser,
+            //         modifierUser,
+            //         affiliatedUser
+            //       );
+            //     } else {
+            //       this.detailFaultyDocs++;
+            //       this.addSummaryDocumentWhenDetailDocAlreadyExists(
+            //         clientObj,
+            //         sourceDocument,
+            //         createrUser,
+            //         modifierUser,
+            //         affiliatedUser
+            //       );
+            //     }
+            //     print(".");
+            //   } else {
+            //     this.detailFaultyDocs++;
+            //   }
             }
           });
     
@@ -422,5 +424,6 @@ class DataAssociation {
   
   const dataAssociationObject = new DataAssociation(db, constructorParameters);
   dataAssociationObject.postCreationSetup();
-  dataAssociationObject.mainDataAssociationMethod();
+  const findQuery = {"consentInformation.type":{$ne:"NO_CONSENT"}};
+  dataAssociationObject.mainDataAssociationMethod(findQuery);
   
