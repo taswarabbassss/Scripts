@@ -331,35 +331,35 @@ class DataAssociation {
                 : this.getUserWithId(modifierUserId);
             const affiliatedUser = modifierUser;
             const clientObj = sourceDocument;
-            if (createrUser && modifierUser && clientObj) {
-              this.setDefaultTenantId(createrUser, modifierUser);
-              if (
-                !this.detailDocumentAlreadyExists(
-                  modifierUserId + "",
-                  sourceDocument._id + ""
-                )
-              ) {
-                this.addNewDetailAndSummaryDocument(
-                  clientObj,
-                  sourceDocument,
-                  createrUser,
-                  modifierUser,
-                  affiliatedUser
-                );
-              } else {
-                this.detailFaultyDocs++;
-                this.addSummaryDocumentWhenDetailDocAlreadyExists(
-                  clientObj,
-                  sourceDocument,
-                  createrUser,
-                  modifierUser,
-                  affiliatedUser
-                );
-              }
-              print(".");
-            } else {
-              this.detailFaultyDocs++;
-            }
+            // if (createrUser && modifierUser && clientObj) {
+            //   this.setDefaultTenantId(createrUser, modifierUser);
+            //   if (
+            //     !this.detailDocumentAlreadyExists(
+            //       modifierUserId + "",
+            //       sourceDocument._id + ""
+            //     )
+            //   ) {
+            //     this.addNewDetailAndSummaryDocument(
+            //       clientObj,
+            //       sourceDocument,
+            //       createrUser,
+            //       modifierUser,
+            //       affiliatedUser
+            //     );
+            //   } else {
+            //     this.detailFaultyDocs++;
+            //     this.addSummaryDocumentWhenDetailDocAlreadyExists(
+            //       clientObj,
+            //       sourceDocument,
+            //       createrUser,
+            //       modifierUser,
+            //       affiliatedUser
+            //     );
+            //   }
+            //   print(".");
+            // } else {
+            //   this.detailFaultyDocs++;
+            // }
           }
         });
   

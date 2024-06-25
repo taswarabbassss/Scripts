@@ -50,7 +50,15 @@ class DataAssociation {
     }
   }
 
-  getDetailDocument(client, user, createrUser, modifierUser, sourceDocument) {
+  getDetailDocument(
+    client,
+    user,
+    createrUser,
+    modifierUser,
+    sourceDocument,
+    dateCreated,
+    dateModified
+  ) {
     try {
       return {
         client: {
@@ -71,18 +79,18 @@ class DataAssociation {
         },
         assocType: this.event,
         assocName: this.event,
-        assocDate: sourceDocument?.consentInformation?.dateCreated,
+        assocDate: dateCreated,
         sourceId: sourceDocument?._id + "",
         timelineData: this.timelineData,
         status: "ACTIVE",
-        createdBy: sourceDocument?.consentInformation?.userId,
-        createdAt: sourceDocument?.consentInformation?.dateCreated,
-        lastModifiedBy: sourceDocument?.consentInformation?.userId,
-        lastModifiedAt: sourceDocument?.consentInformation?.dateModified,
+        createdBy: createrUser?._id + "",
+        createdAt: dateCreated,
+        lastModifiedBy: modifierUser?._id + "",
+        lastModifiedAt: dateModified,
         dataStatus: "ACTIVE",
         dataAudit: {
           created: {
-            when: sourceDocument?.consentInformation?.dateCreated,
+            when: dateCreated,
             tenantId: createrUser?.defaultTenantId,
             tenantName: this.allTenantsInfo[createrUser.defaultTenantId],
             entityId: createrUser?.agency?._id + "",
@@ -91,7 +99,7 @@ class DataAssociation {
             userFullName: createrUser?.firstName + " " + createrUser?.lastName,
           },
           updated: {
-            when: sourceDocument?.consentInformation?.dateModified,
+            when: dateModified,
             tenantId: modifierUser?.defaultTenantId,
             tenantName: this.allTenantsInfo[modifierUser?.defaultTenantId],
             entityId: modifierUser?.agency?._id + "",
@@ -231,13 +239,11 @@ class DataAssociation {
       );
   }
   detailDocumentAlreadyExists(userId, clientId) {
-    let detailResponse = this.db
-      .getCollection(this.detailCollection)
-      .findOne({
-        "client._id": this.getObjectId(clientId),
-        "user.id": userId,
-        assocType: this.event,
-      });
+    let detailResponse = this.db.getCollection(this.detailCollection).findOne({
+      "client._id": this.getObjectId(clientId),
+      "user.id": userId,
+      assocType: this.event,
+    });
     return detailResponse ? true : false;
   }
   getObjectId(id) {
@@ -263,7 +269,9 @@ class DataAssociation {
         affiliatedUser,
         createrUser,
         modifierUser,
-        sourceDocument
+        sourceDocument,
+        sourceDocument?.consentInformation?.dateCreated,
+        sourceDocument?.consentInformation?.dateModified
       );
       this.detailDocumentsList.push(dataAssociationDetailDoc);
       if (dataAssociationDetailDoc) {
