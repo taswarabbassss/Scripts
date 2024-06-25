@@ -371,7 +371,8 @@ class DataAssociation {
         const clientObj = this.getClientWithId(sourceDocument.clientId);
         if (createrUser && modifierUser && clientObj) {
           this.setDefaultTenantAndGetNames(createrUser, modifierUser);
-          sourceDocument.affiliatedUsers.forEach((affliatedUser) => {
+          print(sourceDocument.affiliatedUser.length)
+          sourceDocument.affiliatedUser.forEach((affliatedUser) => {
             const affiliatedUser = this.getUserWithId(affliatedUser.id);
             if (affiliatedUser) {
               if (
@@ -426,15 +427,15 @@ class DataAssociation {
 }
 
 const constructorParameters = {
-  sourceCollection: "Tasawar_program_enrollment",
+  sourceCollection: "crn_client",
   clientCollection: "crn_client",
   userCollection: "user",
   detailCollection: "Tasawar_data_association_detail",
   summaryCollection: "Tasawar_data_association_summary",
-  event: "PROGRAM_ENROLLMENT",
+  event: "MANUAL_CLIENT_USER_AFFILIATION",
   currentTenantId: "5f58aaa8149b3f0006e2e1f7",
   batchSize: 50,
-  findQuery:{affiliatedUsers:{$exists:true}}
+  findQuery:{affiliatedUser:{$exists:true}}
 };
 
 const dataAssociationObject = new DataAssociation(db, constructorParameters);
