@@ -1,203 +1,429 @@
-function dataAssociationWithEvent(
-  clientCollection,
-  userCollection,
-  detailCollection,
-  summaryCollection,
-  event,
-  timelineData,
-  currentTenantId,
-  batchSize
-) {
-  let userDb = db.getSiblingDB("qa-shared-ninepatch-user");
-  let allTenantsInfo = db
-    .getSiblingDB("qa-shared-ninepatch-agency")
-    .getCollection("tenant")
-    .find({}, { name: 1 })
-    .toArray()
-    .reduce((accumilator, tenant) => {
-      accumilator[tenant._id] = tenant.name;
-      return accumilator;
-    }, {});
-  let detailDocumentsList = [];
-  let summaryDocumentsList = [];
-  let totalDetailDocs = 0;
-  let detailFaultyDocs = 0;
-  let summaryFaultyDocs = 0;
-  let totalSummaryDocs = 0;
-  let totalDocumets = db.getCollection(clientCollection).countDocuments();
-  for (
-    let skipValue = 0;
-    skipValue <= totalDocumets;
-    skipValue = skipValue + batchSize
+class DataAssociation {
+  constructor(
+    db,
+    {
+      sourceCollection,
+      clientCollection,
+      userCollection,
+      detailCollection,
+      summaryCollection,
+      event,
+      currentTenantId,
+      batchSize,
+    }
   ) {
-    let clientsList = db
-      .getCollection(clientCollection)
-      .find({})
-      .skip(skipValue)
-      .limit(batchSize)
-      .toArray();
-    clientsList.forEach((client) => {
-      let userId = ObjectId(client.createdBy);
-      let modifierUserId = ObjectId(client.lastModifiedBy);
-      let createrUser = userDb
-        .getCollection(userCollection)
-        .findOne({ _id: userId });
-      let modifierUser =
-        userId.toString() === modifierUserId.toString()
-          ? createrUser
-          : userDb
-              .getCollection(userCollection)
-              .findOne({ _id: modifierUserId });
-      if (createrUser && modifierUser) {
-        if (!createrUser.defaultTenantId) {
-          if (createrUser.tenantIds.length > 0) {
-            createrUser.defaultTenantId = createrUser.tenantIds[0];
-          } else {
-            createrUser.defaultTenantId = currentTenantId;
-          }
-        }
-        if (!modifierUser.defaultTenantId) {
-          if (modifierUser.tenantIds.length > 0) {
-            modifierUser.defaultTenantId = modifierUser.tenantIds[0];
-          } else {
-            modifierUser.defaultTenantId = currentTenantId;
-          }
-        }
-        let createrUserTenantName = allTenantsInfo[createrUser.defaultTenantId];
-        let modifierUserTenantName =
-          allTenantsInfo[modifierUser.defaultTenantId];
-        try {
-          let dataAssociationDetailDoc = {
-            client: {
-              _id: client._id,
-              firstName: client.firstName,
-              lastName: client.lastName,
-            },
-            user: {
-              id: client.createdBy,
-              firstName: createrUser.firstName,
-              lastName: createrUser.lastName,
-              fullName: createrUser.firstName + " " + createrUser.lastName,
-            },
-            agency: {
-              _id: createrUser.agency._id,
-              name: createrUser.agency.name,
-              nickname: createrUser.agency.nickname,
-            },
-            assocType: event,
-            assocName: event,
-            assocDate: client.createdAt,
-            sourceId: client._id.toString(),
-            timelineData: timelineData,
-            status: "ACTIVE",
-            createdBy: client.createdBy,
-            createdAt: client.createdAt,
-            lastModifiedBy: client.lastModifiedBy,
-            lastModifiedAt: client.lastModifiedAt,
-            dataStatus: "ACTIVE",
-            dataAudit: {
-              created: {
-                when: client.createdAt,
-                tenantId: createrUser.defaultTenantId,
-                tenantName: createrUserTenantName,
-                entityId: createrUser.agency._id.toString(),
-                entityName: createrUser.agency.name,
-                userId: client.createdBy,
-                userFullName:
-                  createrUser.firstName + " " + createrUser.lastName,
-              },
-              updated: {
-                when: client.lastModifiedAt,
-                tenantId: modifierUser.defaultTenantId,
-                tenantName: modifierUserTenantName,
-                entityId: modifierUser.agency._id.toString(),
-                entityName: modifierUser.agency.name,
-                userId: client.lastModifiedBy,
-                userFullName:
-                  modifierUser.firstName + " " + modifierUser.lastName,
-              },
-            },
-            _class: "dataAssociationDetail",
-          };
-          detailDocumentsList.push(dataAssociationDetailDoc);
-
-          let dataAssociationSummaryDoc = {
-            client: dataAssociationDetailDoc.client,
-            associations: [],
-            createdBy: dataAssociationDetailDoc.createdBy,
-            createdAt: dataAssociationDetailDoc.createdAt,
-            lastModifiedBy: dataAssociationDetailDoc.lastModifiedBy,
-            lastModifiedAt: dataAssociationDetailDoc.lastModifiedAt,
-            dataAudit: dataAssociationDetailDoc.dataAudit,
-          };
-          let associationDoc = {
-            user: dataAssociationDetailDoc.user,
-            assocDate: dataAssociationDetailDoc.assocDate,
-            status: dataAssociationDetailDoc.status,
-          };
-          dataAssociationSummaryDoc.associations.push(associationDoc);
-
-          summaryDocumentsList.push(dataAssociationSummaryDoc);
-        } catch (e) {
-          detailFaultyDocs++;
-          print(`Error Occured For ${client._id.toString()} Client`);
-          print(e);
-        }
-      } else {
-        detailFaultyDocs++;
-      }
-    });
-
-    let batchEndValue =
-      skipValue + batchSize <= totalDocumets
-        ? skipValue + batchSize
-        : totalDocumets;
-    if (detailDocumentsList.length > 0) {
-      try {
-        let detailResponse = db
-          .getCollection(detailCollection)
-          .insertMany(detailDocumentsList);
-        totalDetailDocs =
-          totalDetailDocs + Object.values(detailResponse.insertedIds).length;
-      } catch (e) {
-        print(`Unalbe to insert records for ${skipValue} to ${batchEndValue}`);
-        print(e);
-      }
-    }
-    if (summaryDocumentsList.length > 0) {
-      try {
-        let summaryResponse = db
-          .getCollection(summaryCollection)
-          .insertMany(summaryDocumentsList);
-        totalSummaryDocs =
-          totalSummaryDocs + Object.values(summaryResponse.insertedIds).length;
-      } catch (e) {
-        print(`Unalbe to insert records for ${skipValue} to ${batchEndValue}`);
-        print(e);
-      }
-    }
-    detailDocumentsList = [];
-    summaryDocumentsList = [];
-    print(".");
-    print(`Processed client from ${skipValue} to ${batchEndValue}`);
+    this.db = db;
+    this.sourceCollection = sourceCollection;
+    this.clientCollection = clientCollection;
+    this.userCollection = userCollection;
+    this.detailCollection = detailCollection;
+    this.summaryCollection = summaryCollection;
+    this.event = event;
+    this.batchSize = batchSize;
+    this.currentTenantId = currentTenantId;
+    this.allTenantsInfo = null;
+    this.allUsers = null;
+    this.timelineData = true;
+    this.detailDocumentsList = [];
+    this.summaryDocumentsList = [];
+    this.totalDetailDocs = 0;
+    this.detailFaultyDocs = 0;
+    this.summaryFaultyDocs = 0;
+    this.totalSummaryDocs = 0;
+    this.totalDocumets = 0;
   }
 
-  print(`Total ${detailFaultyDocs} Documents unable to Insert`);
-  print(
-    `Total ${totalDetailDocs} Documents inserted into {detailCollection} collection`
-  );
-  print(
-    `Total ${totalSummaryDocs} Documents inserted into {summaryCollection} collection`
-  );
+  setDefaultTenantId(createrUser, modifierUser) {
+    if (!createrUser.defaultTenantId) {
+      if (createrUser.tenantIds.length > 0) {
+        createrUser.defaultTenantId = createrUser.tenantIds[0];
+      } else {
+        createrUser.defaultTenantId = this.currentTenantId;
+      }
+    }
+    if (!modifierUser.defaultTenantId) {
+      if (modifierUser.tenantIds.length > 0) {
+        modifierUser.defaultTenantId = modifierUser.tenantIds[0];
+      } else {
+        modifierUser.defaultTenantId = this.currentTenantId;
+      }
+    }
+  }
+
+  getDetailDocument(client, user, createrUser, modifierUser, sourceDocument) {
+    try {
+      return {
+        client: {
+          _id: client?._id,
+          firstName: client?.firstName,
+          lastName: client?.lastName,
+        },
+        user: {
+          id: user?._id + "",
+          firstName: user?.firstName,
+          lastName: user?.lastName,
+          fullName: user?.firstName + " " + user?.lastName,
+        },
+        agency: {
+          _id: user?.agency?._id,
+          name: user?.agency?.name,
+          nickname: user?.agency?.nickname,
+        },
+        assocType: this.event,
+        assocName: this.event,
+        assocDate: sourceDocument?.createdAt,
+        sourceId: sourceDocument?._id + "",
+        timelineData: this.timelineData,
+        status: "ACTIVE",
+        createdBy: sourceDocument?.createdBy,
+        createdAt: sourceDocument?.createdAt,
+        lastModifiedBy: sourceDocument?.lastModifiedBy,
+        lastModifiedAt: sourceDocument?.lastModifiedAt,
+        dataStatus: "ACTIVE",
+        dataAudit: {
+          created: {
+            when: sourceDocument?.createdAt,
+            tenantId: createrUser?.defaultTenantId,
+            tenantName: this.allTenantsInfo[createrUser.defaultTenantId],
+            entityId: createrUser?.agency?._id + "",
+            entityName: createrUser?.agency.name,
+            userId: createrUser?._id + "",
+            userFullName: createrUser?.firstName + " " + createrUser?.lastName,
+          },
+          updated: {
+            when: sourceDocument?.lastModifiedAt,
+            tenantId: modifierUser?.defaultTenantId,
+            tenantName: this.allTenantsInfo[modifierUser?.defaultTenantId],
+            entityId: modifierUser?.agency?._id + "",
+            entityName: modifierUser?.agency.name,
+            userId: modifierUser?._id + "",
+            userFullName:
+              modifierUser?.firstName + " " + modifierUser?.lastName,
+          },
+        },
+        _class: "dataAssociationDetail",
+      };
+    } catch (e) {
+      print("Error in getDetailDocument method");
+      print(e);
+      return {};
+    }
+  }
+
+  insertSummaryDocuments(skipValue, batchEndValue) {
+    try {
+      let summaryResponse = db
+        .getCollection(this.summaryCollection)
+        .insertMany(this.summaryDocumentsList);
+      this.totalSummaryDocs =
+        this.totalSummaryDocs +
+        Object.values(summaryResponse.insertedIds).length;
+    } catch (e) {
+      print(`Unalbe to insert records for ${skipValue} to ${batchEndValue}`);
+      print(e);
+    }
+    this.summaryDocumentsList = [];
+  }
+  insertDetailDocuments(skipValue, batchEndValue) {
+    try {
+      let detailResponse = db
+        .getCollection(this.detailCollection)
+        .insertMany(this.detailDocumentsList);
+      this.totalDetailDocs =
+        this.totalDetailDocs + Object.values(detailResponse.insertedIds).length;
+    } catch (e) {
+      print(`Unalbe to insert records for ${skipValue} to ${batchEndValue}`);
+      print(e);
+    }
+    this.detailDocumentsList = [];
+  }
+
+  addOrUpdateSummaryDocument(
+    client,
+    associatorUserId,
+    dataAssociationDetailDoc
+  ) {
+    const clientSummaryObject = this.db
+      .getCollection(this.summaryCollection)
+      .findOne({ "client._id": client._id });
+    if (clientSummaryObject) {
+      let userAssociated = this.db
+        .getCollection(this.summaryCollection)
+        .findOne({
+          $and: [
+            { _id: clientSummaryObject._id },
+            {
+              associations: { $elemMatch: { "user.id": associatorUserId } },
+            },
+          ],
+        });
+      if (!userAssociated) {
+        let newAssociations = clientSummaryObject.associations;
+        let userAssociationDoc = {
+          user: dataAssociationDetailDoc.user,
+          assocDate: dataAssociationDetailDoc.assocDate,
+          status: dataAssociationDetailDoc.status,
+        };
+        newAssociations.push(userAssociationDoc);
+        try {
+          this.db
+            .getCollection(this.summaryCollection)
+            .updateOne(
+              { _id: clientSummaryObject._id },
+              { $set: { associations: newAssociations } }
+            );
+        } catch (e) {
+          print(
+            `Failure in updation of association of Client${
+              client._id + ""
+            } with User:${associatorUserId}`
+          );
+          print(e);
+        }
+      }
+    } else {
+      // print("insert a new summary object for clientT");
+      try {
+        let dataAssociationSummaryDoc = {
+          client: dataAssociationDetailDoc?.client,
+          associations: [],
+          createdBy: dataAssociationDetailDoc?.createdBy,
+          createdAt: dataAssociationDetailDoc?.createdAt,
+          lastModifiedBy: dataAssociationDetailDoc?.lastModifiedBy,
+          lastModifiedAt: dataAssociationDetailDoc?.lastModifiedAt,
+          dataAudit: dataAssociationDetailDoc?.dataAudit,
+        };
+        let associationDoc = {
+          user: dataAssociationDetailDoc?.user,
+          assocDate: dataAssociationDetailDoc?.assocDate,
+          status: dataAssociationDetailDoc?.status,
+        };
+        dataAssociationSummaryDoc.associations.push(associationDoc);
+        this.summaryDocumentsList.push(dataAssociationSummaryDoc);
+      } catch (e) {
+        print("Error in addOrUpdateSummaryDocument method");
+        print(e);
+        return {};
+      }
+    }
+  }
+
+  finalLogs() {
+    print(`Total ${this.totalDocumets}: Documents`);
+    print(`${this.detailFaultyDocs}: Detail faulty Documents`);
+    print(`${this.summaryFaultyDocs}: Summary faulty Documents`);
+    print(
+      `${this.totalDetailDocs} Documents inserted into ${this.detailCollection} collection`
+    );
+    print(
+      `${this.totalSummaryDocs} Documents inserted into ${this.summaryCollection} collection`
+    );
+  }
+  getUserWithId(userId) {
+    return this.allUsers[userId];
+  }
+  getClientWithId(clientId) {
+    return this.db
+      .getCollection(this.clientCollection)
+      .findOne(
+        { _id: this.getObjectId(clientId) },
+        { firstName: 1, lastName: 1 }
+      );
+  }
+  detailDocumentAlreadyExists(userId, clientId) {
+    let detailResponse = this.db.getCollection(this.detailCollection).findOne({
+      "client._id": this.getObjectId(clientId),
+      "user.id": userId,
+      assocType: this.event,
+    });
+    return detailResponse ? true : false;
+  }
+  getObjectId(id) {
+    let objectId = "";
+    try {
+      objectId = ObjectId(id);
+    } catch (e) {
+      print("OBJECT ID ERROR");
+      print(e);
+    }
+    return objectId;
+  }
+  addNewDetailAndSummaryDocument(
+    clientObj,
+    sourceDocument,
+    createrUser,
+    modifierUser,
+    affiliatedUser
+  ) {
+    try {
+      const dataAssociationDetailDoc = this.getDetailDocument(
+        clientObj,
+        affiliatedUser,
+        createrUser,
+        modifierUser,
+        sourceDocument
+      );
+      this.detailDocumentsList.push(dataAssociationDetailDoc);
+      if (dataAssociationDetailDoc) {
+        this.addOrUpdateSummaryDocument(
+          clientObj,
+          affiliatedUser._id + "",
+          dataAssociationDetailDoc
+        );
+      }
+    } catch (e) {
+      this.detailFaultyDocs++;
+      print(`Error Occured For ${sourceDocument._id + ""} Document`);
+      print(e);
+    }
+  }
+  addSummaryDocumentWhenDetailDocAlreadyExists(
+    clientObj,
+    sourceDocument,
+    createrUser,
+    modifierUser,
+    affiliatedUser
+  ) {
+    try {
+      const dataAssociationDetailDoc = this.getDetailDocument(
+        clientObj,
+        affiliatedUser,
+        createrUser,
+        modifierUser,
+        sourceDocument
+      );
+      if (dataAssociationDetailDoc) {
+        this.addOrUpdateSummaryDocument(
+          clientObj,
+          affiliatedUser._id + "",
+          dataAssociationDetailDoc
+        );
+      }
+    } catch (e) {
+      this.summaryFaultyDocs++;
+      print(`Error Occured For ${sourceDocument._id + ""} Document`);
+      print(e);
+    }
+  }
+  getBatchEndValue(skipValue) {
+    return skipValue + this.batchSize <= this.totalDocumets
+      ? skipValue + this.batchSize
+      : this.totalDocumets;
+  }
+  mainDataAssociationMethod() {
+    for (
+      let skipValue = 0;
+      skipValue <= this.totalDocumets;
+      skipValue = skipValue + this.batchSize
+    ) {
+      let sourceDocumentsList = db
+        .getCollection(this.sourceCollection)
+        .find({})
+        .skip(skipValue)
+        .limit(this.batchSize)
+        .toArray();
+      sourceDocumentsList.forEach((sourceDocument) => {
+        const createrUserId = this.getObjectId(sourceDocument?.createdBy);
+        const modifierUserId = this.getObjectId(sourceDocument?.lastModifiedBy);
+          const createrUser = this.getUserWithId(createrUserId);
+          const modifierUser =
+            createrUserId + "" === modifierUserId + ""
+              ? createrUser
+              : this.getUserWithId(modifierUserId);
+          const affiliatedUser = createrUser;
+          const clientObj = sourceDocument;
+          if (createrUser && modifierUser && clientObj) {
+            this.setDefaultTenantId(createrUser, modifierUser);
+            if (
+              !this.detailDocumentAlreadyExists(
+                affiliatedUser._id + "",
+                clientObj._id + ""
+              )
+            ) {
+              this.addNewDetailAndSummaryDocument(
+                clientObj,
+                sourceDocument,
+                createrUser,
+                modifierUser,
+                affiliatedUser
+              );
+            } else {
+              this.detailFaultyDocs++;
+              this.addSummaryDocumentWhenDetailDocAlreadyExists(
+                clientObj,
+                sourceDocument,
+                createrUser,
+                modifierUser,
+                affiliatedUser
+              );
+            }
+            print(".");
+          } else {
+            this.detailFaultyDocs++;
+          }
+
+      });
+
+      const batchEndValue = this.getBatchEndValue(skipValue);
+      if (this.detailDocumentsList.length > 0) {
+        print("DETAIL: " + this.detailDocumentsList.length);
+        this.insertDetailDocuments(skipValue, batchEndValue);
+      }
+      if (this.summaryDocumentsList.length > 0) {
+        print("SUMMARY: " + this.summaryDocumentsList.length);
+        this.insertSummaryDocuments(skipValue, batchEndValue);
+      }
+      print(`Processed sourceDocument from ${skipValue} to ${batchEndValue}`);
+    }
+    this.finalLogs();
+  }
+
+  postCreationSetup() {
+    this.allTenantsInfo = this.db
+      .getSiblingDB("qa-shared-ninepatch-agency")
+      .getCollection("tenant")
+      .find({}, { name: 1 })
+      .toArray()
+      .reduce((accumilator, tenant) => {
+        accumilator[tenant._id] = tenant.name;
+        return accumilator;
+      }, {});
+    this.allUsers = this.db
+      .getSiblingDB("qa-shared-ninepatch-user")
+      .getCollection(this.userCollection)
+      .find(
+        {},
+        {
+          firstName: 1,
+          lastName: 1,
+          middleName: 1,
+          agency: 1,
+          defaultTenantId: 1,
+          tenantIds: 1,
+        }
+      )
+      .toArray()
+      .reduce((accumilator, user) => {
+        accumilator[user._id + ""] = user;
+        return accumilator;
+      }, {});
+    this.totalDocumets = this.db
+      .getCollection(this.sourceCollection)
+      .countDocuments();
+  }
 }
 
-dataAssociationWithEvent(
-  "Tasawar_crn_client",
-  "user",
-  "Tasawar_data_association_detail",
-  "Tasawar_data_association_summary",
-  "CLIENT_REGISTRY",
-  true,
-  "5f58aaa8149b3f0006e2e1f7",
-  50
-);
+const constructorParameters = {
+  sourceCollection: "Tasawar_crn_client",
+  clientCollection: "crn_client",
+  userCollection: "user",
+  detailCollection: "Tasawar_data_association_detail",
+  summaryCollection: "Tasawar_data_association_summary",
+  event: "CLIENT_REGISTRY",
+  currentTenantId: "5f58aaa8149b3f0006e2e1f7",
+  batchSize: 50,
+};
+
+const dataAssociationObject = new DataAssociation(db, constructorParameters);
+dataAssociationObject.postCreationSetup();
+dataAssociationObject.mainDataAssociationMethod();

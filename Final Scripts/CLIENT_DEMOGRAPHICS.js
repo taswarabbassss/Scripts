@@ -364,6 +364,8 @@ class DataAssociation {
           } else {
             this.detailFaultyDocs++;
           }
+        } else {
+          this.detailFaultyDocs++;
         }
       });
 
@@ -428,3 +430,7 @@ const constructorParameters = {
 const dataAssociationObject = new DataAssociation(db, constructorParameters);
 dataAssociationObject.postCreationSetup();
 dataAssociationObject.mainDataAssociationMethod();
+/**
+  // ---CHANGES---
+  An extra condition of creater should not be equal to modifier
+ */
