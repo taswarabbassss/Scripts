@@ -33,7 +33,7 @@ class DataAssociation {
     this.totalDocumets = 0;
   }
 
-  setDefaultTenantAndGetNames(createrUser, modifierUser) {
+  setDefaultTenantId(createrUser, modifierUser) {
     if (!createrUser.defaultTenantId) {
       if (createrUser.tenantIds.length > 0) {
         createrUser.defaultTenantId = createrUser.tenantIds[0];
@@ -364,7 +364,7 @@ class DataAssociation {
             : this.getUserWithId(modifierUserId);
         const clientObj = this.getClientWithId(sourceDocument.clientId);
         if (createrUser && modifierUser && clientObj) {
-          this.setDefaultTenantAndGetNames(createrUser, modifierUser);
+          this.setDefaultTenantId(createrUser, modifierUser);
           sourceDocument.affiliatedUsers.forEach((affliatedUser) => {
             const affiliatedUser = this.getUserWithId(affliatedUser.id);
             if (affiliatedUser) {

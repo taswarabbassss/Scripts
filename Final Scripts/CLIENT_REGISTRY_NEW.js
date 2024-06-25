@@ -1,4 +1,4 @@
-function setDefaultTenantAndGetNames(
+function setDefaultTenantId(
   createrUser,
   modifierUser,
   currentTenantId,
@@ -214,7 +214,7 @@ function dataAssociationWithEvent(
               .getCollection(userCollection)
               .findOne({ _id: modifierUserId });
       if (createrUser && modifierUser) {
-        let tenantNames = setDefaultTenantAndGetNames(
+        let tenantNames = setDefaultTenantId(
           createrUser,
           modifierUser,
           currentTenantId,

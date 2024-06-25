@@ -33,7 +33,7 @@ class DataAssociation {
     this.totalDocumets = 0;
   }
 
-  setDefaultTenantAndGetNames(createrUser, modifierUser) {
+  setDefaultTenantId(createrUser, modifierUser) {
     if (!createrUser.defaultTenantId) {
       if (createrUser.tenantIds.length > 0) {
         createrUser.defaultTenantId = createrUser.tenantIds[0];
@@ -332,7 +332,7 @@ class DataAssociation {
           const affiliatedUser = modifierUser;
           const clientObj = sourceDocument;
           if (createrUser && modifierUser && clientObj) {
-            this.setDefaultTenantAndGetNames(createrUser, modifierUser);
+            this.setDefaultTenantId(createrUser, modifierUser);
             if (
               !this.detailDocumentAlreadyExists(
                 modifierUserId + "",
