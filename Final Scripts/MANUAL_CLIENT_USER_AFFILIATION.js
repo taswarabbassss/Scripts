@@ -368,10 +368,9 @@ class DataAssociation {
           createrUserId.toString() === modifierUserId.toString()
             ? createrUser
             : this.getUserWithId(modifierUserId);
-        const clientObj = this.getClientWithId(sourceDocument.clientId);
+        const clientObj = sourceDocument;
         if (createrUser && modifierUser && clientObj) {
           this.setDefaultTenantAndGetNames(createrUser, modifierUser);
-          print(sourceDocument.affiliatedUser.length)
           sourceDocument.affiliatedUser.forEach((affliatedUser) => {
             const affiliatedUser = this.getUserWithId(affliatedUser.id);
             if (affiliatedUser) {
