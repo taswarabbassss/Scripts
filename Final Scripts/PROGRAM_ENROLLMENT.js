@@ -33,7 +33,7 @@ class DataAssociation {
     this.totalDocumets = 0;
   }
 
-  setDefaultTenantId(createrUser, modifierUser) {
+  setDefaultTenantAndGetNames(createrUser, modifierUser) {
     if (!createrUser.defaultTenantId) {
       if (createrUser.tenantIds.length > 0) {
         createrUser.defaultTenantId = createrUser.tenantIds[0];
@@ -234,7 +234,11 @@ class DataAssociation {
   detailDocumentAlreadyExists(userId, clientId) {
     let detailResponse = this.db
       .getCollection(this.detailCollection)
-      .findOne({ "client._id": this.getObjectId(clientId), "user.id": userId, "assocType": this.event });
+      .findOne({
+        "client._id": this.getObjectId(clientId),
+        "user.id": userId,
+        assocType: this.event,
+      });
     return detailResponse ? true : false;
   }
   postCreationSetup() {
@@ -337,10 +341,10 @@ class DataAssociation {
       print(e);
     }
   }
-  getBatchEndValue(skipValue){
+  getBatchEndValue(skipValue) {
     return skipValue + this.batchSize <= this.totalDocumets
-    ? skipValue + this.batchSize
-    : this.totalDocumets;
+      ? skipValue + this.batchSize
+      : this.totalDocumets;
   }
   mainDataAssociationMethod() {
     for (
@@ -364,14 +368,14 @@ class DataAssociation {
             : this.getUserWithId(modifierUserId);
         const clientObj = this.getClientWithId(sourceDocument.clientId);
         if (createrUser && modifierUser && clientObj) {
-          this.setDefaultTenantId(createrUser, modifierUser);
+          this.setDefaultTenantAndGetNames(createrUser, modifierUser);
           sourceDocument.affiliatedUsers.forEach((affliatedUser) => {
             const affiliatedUser = this.getUserWithId(affliatedUser.id);
             if (affiliatedUser) {
               if (
                 !this.detailDocumentAlreadyExists(
                   affiliatedUser._id + "",
-                  sourceDocument.clientId
+                  clientObj._id + ""
                 )
               ) {
                 this.addNewDetailAndSummaryDocument(

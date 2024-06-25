@@ -233,7 +233,11 @@ class DataAssociation {
   detailDocumentAlreadyExists(userId, clientId) {
     let detailResponse = this.db
       .getCollection(this.detailCollection)
-      .findOne({ "client._id": this.getObjectId(clientId), "user.id": userId, "assocType": this.event });
+      .findOne({
+        "client._id": this.getObjectId(clientId),
+        "user.id": userId,
+        assocType: this.event,
+      });
     return detailResponse ? true : false;
   }
   getObjectId(id) {
@@ -303,10 +307,10 @@ class DataAssociation {
       print(e);
     }
   }
-  getBatchEndValue(skipValue){
+  getBatchEndValue(skipValue) {
     return skipValue + this.batchSize <= this.totalDocumets
-    ? skipValue + this.batchSize
-    : this.totalDocumets;
+      ? skipValue + this.batchSize
+      : this.totalDocumets;
   }
   mainDataAssociationMethod() {
     for (
@@ -321,8 +325,8 @@ class DataAssociation {
         .limit(this.batchSize)
         .toArray();
       sourceDocumentsList.forEach((sourceDocument) => {
-        const createrUserId = this.getObjectId(sourceDocument.createdBy);
-        const modifierUserId = this.getObjectId(sourceDocument.lastModifiedBy);
+        const createrUserId = this.getObjectId(sourceDocument?.createdBy);
+        const modifierUserId = this.getObjectId(sourceDocument?.lastModifiedBy);
         if (createrUserId + "" !== modifierUserId + "") {
           const createrUser = this.getUserWithId(createrUserId);
           const modifierUser =
@@ -335,8 +339,8 @@ class DataAssociation {
             this.setDefaultTenantId(createrUser, modifierUser);
             if (
               !this.detailDocumentAlreadyExists(
-                modifierUserId + "",
-                sourceDocument._id + ""
+                affiliatedUser._id + "",
+                clientObj._id + ""
               )
             ) {
               this.addNewDetailAndSummaryDocument(
