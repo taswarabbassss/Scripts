@@ -1,0 +1,47 @@
+[
+    {
+      $match: {
+        _id: ObjectId("6690c692d9d80260d4ab25c5"),
+        taskType: "APPOINTMENT"
+      }
+    },
+    {
+      $unwind: "$usersDetails"
+    },
+    {
+      $match:
+        {
+          "usersDetails.agency._id": {
+            $in: [
+              ObjectId("62ea71865968ff028ec7be98"),
+              ObjectId("5eaaabd6149b3f0006514c3f")
+            ]
+          }
+        }
+    },
+    {
+      $group:
+        {
+          _id: "$_id",
+          usersDetails: {
+            $push: "$usersDetails"
+          },
+          data: {
+            $first: "$$ROOT"
+          }
+        }
+    },
+    {
+      $replaceRoot:
+        {
+          newRoot: {
+            $mergeObjects: [
+              "$data",
+              {
+                usersDetails: "$usersDetails"
+              }
+            ]
+          }
+        }
+    }
+  ]

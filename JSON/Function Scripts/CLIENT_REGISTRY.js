@@ -24,10 +24,10 @@ function dataAssociationWithEvent(
   let detailFaultyDocs = 0;
   let summaryFaultyDocs = 0;
   let totalSummaryDocs = 0;
-  let totalDocumets = db.getCollection(clientCollection).countDocuments();
+  let totalDocuments = db.getCollection(clientCollection).countDocuments();
   for (
     let skipValue = 0;
-    skipValue <= totalDocumets;
+    skipValue <= totalDocuments;
     skipValue = skipValue + batchSize
   ) {
     let clientsList = db
@@ -149,12 +149,12 @@ function dataAssociationWithEvent(
     });
 
     let batchEndValue =
-      skipValue + batchSize <= totalDocumets
+      skipValue + batchSize <= totalDocuments
         ? skipValue + batchSize
-        : totalDocumets;
+        : totalDocuments;
     if (detailDocumentsList.length > 0) {
       try {
-        let detailResponse = db
+        const detailResponse = this.db
           .getCollection(detailCollection)
           .insertMany(detailDocumentsList);
         totalDetailDocs =
@@ -166,7 +166,7 @@ function dataAssociationWithEvent(
     }
     if (summaryDocumentsList.length > 0) {
       try {
-        let summaryResponse = db
+        const summaryResponse = this.db
           .getCollection(summaryCollection)
           .insertMany(summaryDocumentsList);
         totalSummaryDocs =
@@ -194,10 +194,10 @@ function dataAssociationWithEvent(
 dataAssociationWithEvent(
   "Tasawar_crn_client",
   "user",
-  "Tasawar_data_association_detail",
-  "Tasawar_data_association_summary",
+  "data_association_detail",
+  "data_association_summary",
   "CLIENT_REGISTRY",
   true,
-  "5f58aaa8149b3f0006e2e1f7",
+  "5f572b995d15761b68b1ef0c",
   50
 );

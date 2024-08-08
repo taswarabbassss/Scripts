@@ -1,0 +1,43 @@
+[
+  {
+    "$match": {
+      "careTeam": {
+        "$exists": true,
+        "$type": "array"
+      },
+      "$expr": {
+        "$gte": [
+          {
+            "$size": "$careTeam"
+          },
+          1
+        ]
+      }
+    }
+  },
+  {
+    "$unwind": {
+      "path": "$careTeam",
+      "includeArrayIndex": "yes",
+      "preserveNullAndEmptyArrays": true
+    }
+  },
+  {
+    "$match": {
+      "careTeam.status": {
+        "$nin": ["REMOVE"]
+      }
+    }
+  },
+  {
+    "$group": {
+      "_id": "$_id",
+      "careTeam": {
+        "$push": "$careTeam"
+      }
+    }
+  },
+  {
+    "$count": "total"
+  }
+]

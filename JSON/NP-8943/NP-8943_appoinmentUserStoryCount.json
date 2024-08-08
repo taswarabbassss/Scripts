@@ -1,0 +1,19 @@
+{
+  "aggregate": "__collection__",
+  "pipeline": [
+    {
+      "$match": {
+        "$and": [
+          { "clientId": "6684e5bd065e575c95df424e", "taskType": "APPOINTMENT" },
+          {
+            "$or": [
+              { "client.tenantIds": "5f572b995d15761b68b1ef0c" },
+              { "tenantIds": "5f572b995d15761b68b1ef0c" }
+            ]
+          }
+        ]
+      }
+    },
+    { "$count": "total" }
+  ]
+}

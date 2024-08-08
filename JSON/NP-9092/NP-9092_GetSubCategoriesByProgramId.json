@@ -1,0 +1,43 @@
+{
+  "aggregate": "__collection__",
+  "pipeline": [
+    {
+      "$match": {
+        "$and": [
+          { "affiliation.programId": { "$in": ["643509f0aa02244765d0f279"] } },
+          { "tenantIds": { "$in": ["5f572b995d15761b68b1ef0c"] } },
+          { "tenantIds": "5f572b995d15761b68b1ef0c" },
+          { "regions._id": { "$in": ["619f670dadbe1d0008deb99d"] } },
+          { "services.categories.name": "Primary Care & Specialists" },
+          { "isActive": true },
+          { "organizationType": { "$ne": "PAYER_PARTNER_NETWORK" } },
+          { "displayInResourceDirSearch": { "$ne": false } }
+        ]
+      }
+    },
+    {
+      "$project": {
+        "name": 1,
+        "nickname": 1,
+        "pictures": 1,
+        "abbreviation": 1,
+        "geoLocationInfo": 1,
+        "referralAcceptedFrom": "$referralInfo.referralAcceptedFrom",
+        "referralAcceptedFromAll": "$referralInfo.referralAcceptedFromAll",
+        "isExpress": "$referralInfo.isExpress",
+        "isLog": "$referralInfo.isLog",
+        "isElectronic": "$referralInfo.isElectronic",
+        "isPaper": "$referralInfo.isPaper",
+        "organizationType": 1,
+        "associatedOrgsByOrgType": 1,
+        "tenantIds": 1,
+        "isOutOfNetwork": 1,
+        "outOfNetworkReferralInfo": 1,
+        "offSiteLocations": 1,
+        "address": 1,
+        "contacts": 1,
+        "languages": 1
+      }
+    }
+  ]
+}

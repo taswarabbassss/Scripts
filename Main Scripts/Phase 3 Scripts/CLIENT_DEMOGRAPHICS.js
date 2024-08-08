@@ -2,6 +2,8 @@ class DataAssociation {
   constructor(
     db,
     {
+      userDbName,
+      agencyDbName,
       sourceCollection,
       clientCollection,
       userCollection,
@@ -10,9 +12,12 @@ class DataAssociation {
       event,
       currentTenantId,
       batchSize,
+      findQuery,
     }
   ) {
     this.db = db;
+    this.userDbName = userDbName;
+    this.agencyDbName = agencyDbName;
     this.sourceCollection = sourceCollection;
     this.clientCollection = clientCollection;
     this.userCollection = userCollection;
@@ -20,6 +25,7 @@ class DataAssociation {
     this.summaryCollection = summaryCollection;
     this.event = event;
     this.batchSize = batchSize;
+    this.findQuery = findQuery;
     this.currentTenantId = currentTenantId;
     this.allTenantsInfo = null;
     this.allUsers = null;
@@ -28,9 +34,11 @@ class DataAssociation {
     this.summaryDocumentsList = [];
     this.totalDetailDocs = 0;
     this.detailFaultyDocs = 0;
-    this.summaryFaultyDocs = 0;
+    this.insertedAssociations = 0;
+    this.detailAlreadyExistingDocuments = 0;
+    this.summaryAlreadyAssociatedDocs = 0;
     this.totalSummaryDocs = 0;
-    this.totalDocumets = 0;
+    this.totalDocuments = 0;
   }
 
   setDefaultTenantId(createrUser, modifierUser) {
@@ -112,7 +120,7 @@ class DataAssociation {
 
   insertSummaryDocuments(skipValue, batchEndValue) {
     try {
-      let summaryResponse = db
+      const summaryResponse = this.db
         .getCollection(this.summaryCollection)
         .insertMany(this.summaryDocumentsList);
       this.totalSummaryDocs =
@@ -126,7 +134,7 @@ class DataAssociation {
   }
   insertDetailDocuments(skipValue, batchEndValue) {
     try {
-      let detailResponse = db
+      const detailResponse = this.db
         .getCollection(this.detailCollection)
         .insertMany(this.detailDocumentsList);
       this.totalDetailDocs =
@@ -172,6 +180,7 @@ class DataAssociation {
               { _id: clientSummaryObject._id },
               { $set: { associations: newAssociations } }
             );
+          this.insertedAssociations++;
         } catch (e) {
           print(
             `Failure in updation of association of Client${
@@ -180,6 +189,8 @@ class DataAssociation {
           );
           print(e);
         }
+      } else {
+        this.summaryAlreadyAssociatedDocs++;
       }
     } else {
       // print("insert a new summary object for clientT");
@@ -209,12 +220,17 @@ class DataAssociation {
   }
 
   finalLogs() {
-    print(`Total ${this.totalDocumets}: Documents`);
+    print(`Total ${this.totalDocuments}: Documents`);
     print(`${this.detailFaultyDocs}: Detail faulty Documents`);
-    print(`${this.summaryFaultyDocs}: Summary faulty Documents`);
+    print(
+      `${this.detailAlreadyExistingDocuments}: Already existing Detail Documents`
+    );
+    print(`${this.summaryAlreadyAssociatedDocs}: Users Already Associated`);
     print(
       `${this.totalDetailDocs} Documents inserted into ${this.detailCollection} collection`
     );
+
+    print(`${this.insertedAssociations} Associations inserted`);
     print(
       `${this.totalSummaryDocs} Documents inserted into ${this.summaryCollection} collection`
     );
@@ -230,14 +246,13 @@ class DataAssociation {
         { firstName: 1, lastName: 1 }
       );
   }
-  detailDocumentAlreadyExists(userId, clientId) {
-    let detailResponse = this.db
-      .getCollection(this.detailCollection)
-      .findOne({
-        "client._id": this.getObjectId(clientId),
-        "user.id": userId,
-        assocType: this.event,
-      });
+  detailDocumentAlreadyExists(userId, clientId, sourceDocumentId) {
+    let detailResponse = this.db.getCollection(this.detailCollection).findOne({
+      "client._id": this.getObjectId(clientId),
+      "user.id": userId,
+      assocType: this.event,
+      sourceId: sourceDocumentId,
+    });
     return detailResponse ? true : false;
   }
   getObjectId(id) {
@@ -245,8 +260,7 @@ class DataAssociation {
     try {
       objectId = ObjectId(id);
     } catch (e) {
-      print("OBJECT ID ERROR");
-      print(e);
+      print("OBJECT ID ERROR: " + id);
     }
     return objectId;
   }
@@ -255,12 +269,12 @@ class DataAssociation {
     sourceDocument,
     createrUser,
     modifierUser,
-    affiliatedUser
+    associatedUser
   ) {
     try {
       const dataAssociationDetailDoc = this.getDetailDocument(
         clientObj,
-        affiliatedUser,
+        associatedUser,
         createrUser,
         modifierUser,
         sourceDocument
@@ -269,7 +283,7 @@ class DataAssociation {
       if (dataAssociationDetailDoc) {
         this.addOrUpdateSummaryDocument(
           clientObj,
-          affiliatedUser._id + "",
+          associatedUser._id + "",
           dataAssociationDetailDoc
         );
       }
@@ -284,12 +298,12 @@ class DataAssociation {
     sourceDocument,
     createrUser,
     modifierUser,
-    affiliatedUser
+    associatedUser
   ) {
     try {
       const dataAssociationDetailDoc = this.getDetailDocument(
         clientObj,
-        affiliatedUser,
+        associatedUser,
         createrUser,
         modifierUser,
         sourceDocument
@@ -297,30 +311,78 @@ class DataAssociation {
       if (dataAssociationDetailDoc) {
         this.addOrUpdateSummaryDocument(
           clientObj,
-          affiliatedUser._id + "",
+          associatedUser._id + "",
           dataAssociationDetailDoc
         );
       }
     } catch (e) {
-      this.summaryFaultyDocs++;
       print(`Error Occured For ${sourceDocument._id + ""} Document`);
       print(e);
     }
   }
   getBatchEndValue(skipValue) {
-    return skipValue + this.batchSize <= this.totalDocumets
+    return skipValue + this.batchSize <= this.totalDocuments
       ? skipValue + this.batchSize
-      : this.totalDocumets;
+      : this.totalDocuments;
+  }
+  createMyIndexes() {
+    const existingIndexes = this.db
+      .getCollection(this.sourceCollection)
+      .getIndexes();
+    const indexes = Object.keys(this.findQuery).filter(
+      (fieldName) => fieldName !== "$expr" || fieldName.includes(".")
+    );
+    indexes.forEach((indexValue) => {
+      const existingIndex = existingIndexes.find(
+        (index) => index.key[indexValue]
+      );
+      if (!existingIndex) {
+        const indexName = `data_association_scripting_index_${indexValue}`;
+        try {
+          this.db
+            .getCollection(this.sourceCollection)
+            .createIndex({ [indexValue]: 1 }, { name: indexName });
+          console.log(`Index ${indexName} created successfully`);
+        } catch (e) {
+          print(e);
+        }
+      } else {
+        console.log(
+          `Index for field ${indexValue} already exists, skipping creation.`
+        );
+      }
+    });
+  }
+  dropMyIndexes() {
+    const existingIndexes = this.db
+      .getCollection(this.sourceCollection)
+      .getIndexes();
+    const indexes = Object.keys(this.findQuery).filter(
+      (fieldName) => fieldName !== "$expr" || fieldName.includes(".")
+    );
+    indexes.forEach((indexValue) => {
+      const indexName = `data_association_scripting_index_${indexValue}`;
+      const existingIndex = existingIndexes.find(
+        (index) => index.name === indexName
+      );
+      if (existingIndex) {
+        this.db.getCollection(this.sourceCollection).dropIndex(indexName);
+        console.log(`Index ${indexName} dropped successfully`);
+      } else {
+        console.log(`Index ${indexName} does not exist, skipping deletion.`);
+      }
+    });
   }
   mainDataAssociationMethod() {
+    print(this.event);
     for (
       let skipValue = 0;
-      skipValue <= this.totalDocumets;
+      skipValue <= this.totalDocuments;
       skipValue = skipValue + this.batchSize
     ) {
       let sourceDocumentsList = db
         .getCollection(this.sourceCollection)
-        .find({})
+        .find(this.findQuery)
         .skip(skipValue)
         .limit(this.batchSize)
         .toArray();
@@ -333,33 +395,17 @@ class DataAssociation {
             createrUserId + "" === modifierUserId + ""
               ? createrUser
               : this.getUserWithId(modifierUserId);
-          const affiliatedUser = modifierUser;
+          const associatedUser = modifierUser;
           const clientObj = sourceDocument;
           if (createrUser && modifierUser && clientObj) {
             this.setDefaultTenantId(createrUser, modifierUser);
-            if (
-              !this.detailDocumentAlreadyExists(
-                affiliatedUser._id + "",
-                clientObj._id + ""
-              )
-            ) {
-              this.addNewDetailAndSummaryDocument(
-                clientObj,
-                sourceDocument,
-                createrUser,
-                modifierUser,
-                affiliatedUser
-              );
-            } else {
-              this.detailFaultyDocs++;
-              this.addSummaryDocumentWhenDetailDocAlreadyExists(
-                clientObj,
-                sourceDocument,
-                createrUser,
-                modifierUser,
-                affiliatedUser
-              );
-            }
+            this.addNewDetailAndSummaryDocument(
+              clientObj,
+              sourceDocument,
+              createrUser,
+              modifierUser,
+              associatedUser
+            );
             print(".");
           } else {
             this.detailFaultyDocs++;
@@ -383,7 +429,7 @@ class DataAssociation {
 
   postCreationSetup() {
     this.allTenantsInfo = this.db
-      .getSiblingDB("qa-shared-ninepatch-agency")
+      .getSiblingDB(this.agencyDbName)
       .getCollection("tenant")
       .find({}, { name: 1 })
       .toArray()
@@ -392,7 +438,7 @@ class DataAssociation {
         return accumilator;
       }, {});
     this.allUsers = this.db
-      .getSiblingDB("qa-shared-ninepatch-user")
+      .getSiblingDB(this.userDbName)
       .getCollection(this.userCollection)
       .find(
         {},
@@ -410,26 +456,38 @@ class DataAssociation {
         accumilator[user._id + ""] = user;
         return accumilator;
       }, {});
-    this.totalDocumets = this.db
+    this.totalDocuments = this.db
       .getCollection(this.sourceCollection)
-      .countDocuments();
+      .countDocuments(this.findQuery);
+    print(`Process started for ${this.totalDocuments} documents`);
   }
 }
 
 const constructorParameters = {
+  userDbName: "qa-shared-ninepatch-user",
+  agencyDbName: "qa-shared-ninepatch-agency",
   sourceCollection: "crn_client",
   clientCollection: "crn_client",
   userCollection: "user",
-  detailCollection: "Tasawar_data_association_detail",
-  summaryCollection: "Tasawar_data_association_summary",
+  detailCollection: "data_association_detail",
+  summaryCollection: "data_association_summary",
   event: "CLIENT_DEMOGRAPHICS",
-  currentTenantId: "5f58aaa8149b3f0006e2e1f7",
+  currentTenantId: "5f572b995d15761b68b1ef0c",
   batchSize: 50,
+  findQuery: {
+    createdBy: { $exists: true },
+    lastModifiedBy: { $exists: true },
+    createdAt: { $exists: true },
+    lastModifiedAt: { $exists: true },
+    $expr: { $ne: ["$lastModifiedBy", "$createdBy"] },
+  },
 };
 
 const dataAssociationObject = new DataAssociation(db, constructorParameters);
 dataAssociationObject.postCreationSetup();
+dataAssociationObject.createMyIndexes();
 dataAssociationObject.mainDataAssociationMethod();
+dataAssociationObject.dropMyIndexes();
 /**
   // ---CHANGES---
   An extra condition of creater should not be equal to modifier

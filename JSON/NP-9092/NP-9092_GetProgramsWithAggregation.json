@@ -1,0 +1,60 @@
+[
+  {
+    "$lookup": {
+      "from": "agency",
+      "let": {
+        "p_id": "$_id"
+      },
+      "pipeline": [
+        {
+          "$unwind": "$affiliation"
+        },
+        {
+          "$addFields": {
+            "affiliation.programId": {
+              "$convert": {
+                "input": "$affiliation.programId",
+                "to": "objectId",
+                "onError": null,
+                "onNull": null
+              }
+            }
+          }
+        },
+        {
+          "$match": {
+            "$expr": {
+              "$eq": ["$affiliation.programId", "$$p_id"]
+            }
+          }
+        },
+        {
+          "$project": {
+            "_id": 1
+          }
+        }
+      ],
+      "as": "agenciesList"
+    }
+  },
+  {
+    "$addFields": {
+      "affiliatedAgencies": {
+        "$size": "$agenciesList"
+      }
+    }
+  },
+  {
+    "$project": {
+      "name": 1,
+      "description": 1,
+      "createdAt": 1,
+      "affiliatedAgencies": 1
+    }
+  },
+  {
+    "$sort": {
+      "affiliatedAgencies": -1
+    }
+  }
+]

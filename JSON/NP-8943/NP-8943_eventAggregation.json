@@ -1,0 +1,26 @@
+[
+    {
+      $match: {
+          _id: ObjectId("6690c692d9d80260d4ab25c5"),
+          taskType: "APPOINTMENT"
+        }
+    },
+    {
+      $unwind: "$usersDetails"
+    },
+    {
+      $project: {
+          usersDetails: 1,
+          agencyId: "$usersDetails.agency._id",
+          _id: 0
+        }
+    },
+    {
+      $group: {
+          _id: "",
+          allAgencies: {
+            $addToSet: "$agencyId"
+            }
+        }
+    }
+]

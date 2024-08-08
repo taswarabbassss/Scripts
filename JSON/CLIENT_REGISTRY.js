@@ -2,6 +2,8 @@ class DataAssociation {
   constructor(
     db,
     {
+      userDbName,
+      agencyDbName,
       sourceCollection,
       clientCollection,
       userCollection,
@@ -13,6 +15,8 @@ class DataAssociation {
     }
   ) {
     this.db = db;
+    this.userDbName = userDbName;
+    this.agencyDbName = agencyDbName;
     this.sourceCollection = sourceCollection;
     this.clientCollection = clientCollection;
     this.userCollection = userCollection;
@@ -28,9 +32,10 @@ class DataAssociation {
     this.summaryDocumentsList = [];
     this.totalDetailDocs = 0;
     this.detailFaultyDocs = 0;
+    this.detailAlreadyExistingDocuments = 0;
     this.summaryFaultyDocs = 0;
     this.totalSummaryDocs = 0;
-    this.totalDocumets = 0;
+    this.totalDocuments = 0;
   }
 
   setDefaultTenantId(createrUser, modifierUser) {
@@ -50,15 +55,7 @@ class DataAssociation {
     }
   }
 
-  getDetailDocument(
-    client,
-    user,
-    createrUser,
-    modifierUser,
-    sourceDocument,
-    dateCreated,
-    dateModified
-  ) {
+  getDetailDocument(client, user, createrUser, modifierUser, sourceDocument) {
     try {
       return {
         client: {
@@ -79,18 +76,18 @@ class DataAssociation {
         },
         assocType: this.event,
         assocName: this.event,
-        assocDate: dateCreated,
+        assocDate: sourceDocument?.createdAt,
         sourceId: sourceDocument?._id + "",
         timelineData: this.timelineData,
         status: "ACTIVE",
-        createdBy: createrUser?._id + "",
-        createdAt: dateCreated,
-        lastModifiedBy: modifierUser?._id + "",
-        lastModifiedAt: dateModified,
+        createdBy: sourceDocument?.createdBy,
+        createdAt: sourceDocument?.createdAt,
+        lastModifiedBy: sourceDocument?.lastModifiedBy,
+        lastModifiedAt: sourceDocument?.lastModifiedAt,
         dataStatus: "ACTIVE",
         dataAudit: {
           created: {
-            when: dateCreated,
+            when: sourceDocument?.createdAt,
             tenantId: createrUser?.defaultTenantId,
             tenantName: this.allTenantsInfo[createrUser.defaultTenantId],
             entityId: createrUser?.agency?._id + "",
@@ -99,7 +96,7 @@ class DataAssociation {
             userFullName: createrUser?.firstName + " " + createrUser?.lastName,
           },
           updated: {
-            when: dateModified,
+            when: sourceDocument?.lastModifiedAt,
             tenantId: modifierUser?.defaultTenantId,
             tenantName: this.allTenantsInfo[modifierUser?.defaultTenantId],
             entityId: modifierUser?.agency?._id + "",
@@ -120,7 +117,7 @@ class DataAssociation {
 
   insertSummaryDocuments(skipValue, batchEndValue) {
     try {
-      let summaryResponse = db
+      const summaryResponse = this.db
         .getCollection(this.summaryCollection)
         .insertMany(this.summaryDocumentsList);
       this.totalSummaryDocs =
@@ -134,7 +131,7 @@ class DataAssociation {
   }
   insertDetailDocuments(skipValue, batchEndValue) {
     try {
-      let detailResponse = db
+      const detailResponse = this.db
         .getCollection(this.detailCollection)
         .insertMany(this.detailDocumentsList);
       this.totalDetailDocs =
@@ -217,8 +214,11 @@ class DataAssociation {
   }
 
   finalLogs() {
-    print(`Total ${this.totalDocumets}: Documents`);
+    print(`Total ${this.totalDocuments}: Documents`);
     print(`${this.detailFaultyDocs}: Detail faulty Documents`);
+    print(
+      `${this.detailAlreadyExistingDocuments}: Already existing Detail Documents`
+    );
     print(`${this.summaryFaultyDocs}: Summary faulty Documents`);
     print(
       `${this.totalDetailDocs} Documents inserted into ${this.detailCollection} collection`
@@ -251,8 +251,7 @@ class DataAssociation {
     try {
       objectId = ObjectId(id);
     } catch (e) {
-      print("OBJECT ID ERROR");
-      print(e);
+      print("OBJECT ID ERROR: " + id);
     }
     return objectId;
   }
@@ -261,23 +260,21 @@ class DataAssociation {
     sourceDocument,
     createrUser,
     modifierUser,
-    affiliatedUser
+    associatedUser
   ) {
     try {
       const dataAssociationDetailDoc = this.getDetailDocument(
         clientObj,
-        affiliatedUser,
+        associatedUser,
         createrUser,
         modifierUser,
-        sourceDocument,
-        sourceDocument?.consentInformation?.dateCreated,
-        sourceDocument?.consentInformation?.dateModified
+        sourceDocument
       );
       this.detailDocumentsList.push(dataAssociationDetailDoc);
       if (dataAssociationDetailDoc) {
         this.addOrUpdateSummaryDocument(
           clientObj,
-          affiliatedUser._id + "",
+          associatedUser._id + "",
           dataAssociationDetailDoc
         );
       }
@@ -292,12 +289,12 @@ class DataAssociation {
     sourceDocument,
     createrUser,
     modifierUser,
-    affiliatedUser
+    associatedUser
   ) {
     try {
       const dataAssociationDetailDoc = this.getDetailDocument(
         clientObj,
-        affiliatedUser,
+        associatedUser,
         createrUser,
         modifierUser,
         sourceDocument
@@ -305,7 +302,7 @@ class DataAssociation {
       if (dataAssociationDetailDoc) {
         this.addOrUpdateSummaryDocument(
           clientObj,
-          affiliatedUser._id + "",
+          associatedUser._id + "",
           dataAssociationDetailDoc
         );
       }
@@ -316,13 +313,81 @@ class DataAssociation {
     }
   }
   getBatchEndValue(skipValue) {
-    return skipValue + this.batchSize <= this.totalDocumets
+    return skipValue + this.batchSize <= this.totalDocuments
       ? skipValue + this.batchSize
-      : this.totalDocumets;
+      : this.totalDocuments;
   }
-  postCreationSetup(findQuery) {
+  mainDataAssociationMethod() {
+    print(this.event);
+    for (
+      let skipValue = 0;
+      skipValue <= this.totalDocuments;
+      skipValue = skipValue + this.batchSize
+    ) {
+      let sourceDocumentsList = db
+        .getCollection(this.sourceCollection)
+        .find({})
+        .skip(skipValue)
+        .limit(this.batchSize)
+        .toArray();
+      sourceDocumentsList.forEach((sourceDocument) => {
+        const createrUserId = this.getObjectId(sourceDocument?.createdBy);
+        const modifierUserId = this.getObjectId(sourceDocument?.lastModifiedBy);
+        const createrUser = this.getUserWithId(createrUserId);
+        const modifierUser =
+          createrUserId + "" === modifierUserId + ""
+            ? createrUser
+            : this.getUserWithId(modifierUserId);
+        const associatedUser = createrUser;
+        const clientObj = sourceDocument;
+        if (createrUser && modifierUser && clientObj) {
+          this.setDefaultTenantId(createrUser, modifierUser);
+          if (
+            !this.detailDocumentAlreadyExists(
+              associatedUser._id + "",
+              clientObj._id + ""
+            )
+          ) {
+            this.addNewDetailAndSummaryDocument(
+              clientObj,
+              sourceDocument,
+              createrUser,
+              modifierUser,
+              associatedUser
+            );
+          } else {
+            this.detailFaultyDocs++;
+            this.addSummaryDocumentWhenDetailDocAlreadyExists(
+              clientObj,
+              sourceDocument,
+              createrUser,
+              modifierUser,
+              associatedUser
+            );
+          }
+          print(".");
+        } else {
+          this.detailFaultyDocs++;
+        }
+      });
+
+      const batchEndValue = this.getBatchEndValue(skipValue);
+      if (this.detailDocumentsList.length > 0) {
+        print("DETAIL: " + this.detailDocumentsList.length);
+        this.insertDetailDocuments(skipValue, batchEndValue);
+      }
+      if (this.summaryDocumentsList.length > 0) {
+        print("SUMMARY: " + this.summaryDocumentsList.length);
+        this.insertSummaryDocuments(skipValue, batchEndValue);
+      }
+      print(`Processed sourceDocument from ${skipValue} to ${batchEndValue}`);
+    }
+    this.finalLogs();
+  }
+
+  postCreationSetup() {
     this.allTenantsInfo = this.db
-      .getSiblingDB("qa-shared-ninepatch-agency")
+      .getSiblingDB(this.agencyDbName)
       .getCollection("tenant")
       .find({}, { name: 1 })
       .toArray()
@@ -331,7 +396,7 @@ class DataAssociation {
         return accumilator;
       }, {});
     this.allUsers = this.db
-      .getSiblingDB("qa-shared-ninepatch-user")
+      .getSiblingDB(this.userDbName)
       .getCollection(this.userCollection)
       .find(
         {},
@@ -349,93 +414,25 @@ class DataAssociation {
         accumilator[user._id + ""] = user;
         return accumilator;
       }, {});
-    this.totalDocumets = this.db
+    this.totalDocuments = this.db
       .getCollection(this.sourceCollection)
-      .countDocuments(findQuery);
-    // this.totalDocumets = 10;
-  }
-  mainDataAssociationMethod(findQuery) {
-    for (
-      let skipValue = 0;
-      skipValue <= this.totalDocumets;
-      skipValue = skipValue + this.batchSize
-    ) {
-      let sourceDocumentsList = db
-        .getCollection(this.sourceCollection)
-        .find(findQuery)
-        .skip(skipValue)
-        .limit(this.batchSize)
-        .toArray();
-      sourceDocumentsList.forEach((sourceDocument) => {
-        const affiliatedUser = this.getUserWithId(
-          sourceDocument?.consentInformation?.userId
-        );
-        const clientObj = sourceDocument;
-
-        if (affiliatedUser) {
-          const createrUser = affiliatedUser;
-          const modifierUser = affiliatedUser;
-          this.setDefaultTenantId(createrUser, modifierUser);
-          if (
-            !this.detailDocumentAlreadyExists(
-              affiliatedUser._id + "",
-              sourceDocument._id + ""
-            )
-          ) {
-            this.addNewDetailAndSummaryDocument(
-              clientObj,
-              sourceDocument,
-              createrUser,
-              modifierUser,
-              affiliatedUser
-            );
-          } else {
-            this.detailFaultyDocs++;
-            this.addSummaryDocumentWhenDetailDocAlreadyExists(
-              clientObj,
-              sourceDocument,
-              createrUser,
-              modifierUser,
-              affiliatedUser
-            );
-          }
-          print(".");
-        } else {
-          this.detailFaultyDocs++;
-        }
-      });
-
-      const batchEndValue = this.getBatchEndValue(skipValue);
-      if (this.detailDocumentsList.length > 0) {
-        this.insertDetailDocuments(skipValue, batchEndValue);
-      }
-      if (this.summaryDocumentsList.length > 0) {
-        this.insertSummaryDocuments(skipValue, batchEndValue);
-      }
-      print(`Processed sourceDocument from ${skipValue} to ${batchEndValue}`);
-    }
-    this.finalLogs();
+      .countDocuments();
   }
 }
 
 const constructorParameters = {
-  sourceCollection: "crn_client",
+  userDbName: "qa-shared-ninepatch-user",
+  agencyDbName: "qa-shared-ninepatch-agency",
+  sourceCollection: "Tasawar_crn_client",
   clientCollection: "crn_client",
   userCollection: "user",
-  detailCollection: "Tasawar_data_association_detail",
-  summaryCollection: "Tasawar_data_association_summary",
-  event: "CONSENT",
-  currentTenantId: "5f58aaa8149b3f0006e2e1f7",
+  detailCollection: "data_association_detail",
+  summaryCollection: "data_association_summary",
+  event: "CLIENT_REGISTRY",
+  currentTenantId: "5f572b995d15761b68b1ef0c",
   batchSize: 50,
 };
 
 const dataAssociationObject = new DataAssociation(db, constructorParameters);
-const findQuery = { "consentInformation.type": { $ne: "NO_CONSENT" } };
-dataAssociationObject.postCreationSetup(findQuery);
-dataAssociationObject.mainDataAssociationMethod(findQuery);
-
-/**
-  // ---CHANGES---
-  CHANGE IN DETAIL Document
-  createdAt,createdBy, lastModifiedAt, lastModifiedBy,dataAutdit modifiedAt, dataAudit createdAt
- */
+dataAssociationObject.postCreationSetup();
+dataAssociationObject.mainDataAssociationMethod();
