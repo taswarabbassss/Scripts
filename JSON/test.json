@@ -1,76 +1,11 @@
-{
-  "$and": [
-    {
-      "$and": [
-        {
-          "$or": [
-            {
-              "visibleToAllAgencies": true
-            },
-            {
-              "visibleToOnlyMyAgency": true,
-              "$and": [
-                {
-                  "ownerAgency.id": "5eb1304f36d1a000066745f3"
-                }
-              ]
-            },
-            {
-              "visibleToAgencies": {
-                "$in": ["5eb1304f36d1a000066745f3"]
-              }
-            }
-          ]
-        },
-        {
-          "$or": [
-            {
-              "isTemplateForm": true
-            },
-            {
-              "formType": {
-                "$ne": "REFERRAL"
-              }
-            },
-            {
-              "formType": "REFERRAL",
-              "$and": [
-                {
-                  "ownerAgency.id": "5eb1304f36d1a000066745f3"
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "formType": {
-            "$ne": "DEMOGRAPHICS"
-          }
-        }
-      ]
-    },
-    {
-      "formType": "ASSESSMENT_OR_SCREENER"
-    },
-    {
-      "isActive": true
-    },
-    {
-      "formType": {
-        "$ne": "DEMOGRAPHICS"
-      }
-    },
-    {
-      "$or": [
-        {
-          "tenantIds": {
-            "$in": ["5f572b995d15761b68b1ef0c"]
-          }
-        },
-        {
-          "isTemplateForm": true
-        }
-      ]
-    }
-  ]
-}
+[
+  ObjectId("66bde16d31d4ee9dd8073b15"),ObjectId(
+  "66bde1a631d4ee9dd8073bd4"),ObjectId(
+  "66bde1a631d4ee9dd8073bd6"),ObjectId(
+  "66bde25531d4ee9dd8073de5"),ObjectId(
+  "66bde25531d4ee9dd8073de6"),ObjectId(
+  "66bde25531d4ee9dd8073dea"),ObjectId(
+  "66bde25531d4ee9dd8073df3"),ObjectId(
+  "66bde25531d4ee9dd8073df5"),ObjectId(
+  "66bde25531d4ee9dd8073df9")
+]

@@ -1,6 +1,6 @@
 //1) removal agency from outside user document
 
-db.getCollection("test_data_association_summary").updateMany(
+db.getCollection("data_association_summary").updateMany(
   { "associations.agency": { $exists: true } },
   { $unset: { "associations.$[].agency": "" } }
 );
@@ -10,7 +10,7 @@ db.getCollection("test_data_association_summary").updateMany(
 const clientCollection = "data_association_summary";
 
 const allUsers = db
-  .getSiblingDB("qa-shared-ninepatch-user")
+  .getSiblingDB("dev-rchc-ninepatch-user")
   .getCollection("user")
   .find(
     {},
@@ -33,11 +33,12 @@ print(allUsers.length);
 
 const summarryDocuments = db.getCollection(clientCollection).find({}).toArray();
 let index = 0;
+print(summarryDocuments.length);
 summarryDocuments.forEach((doc) => {
   let updatedAssociations = [];
   doc.associations.forEach((userDoc) => {
-    const agency = allUsers[userDoc.user.id].agency;
     try {
+      const agency = allUsers[userDoc.user.id]?.agency;
       userDoc.user.agency = {
         _id: agency?._id,
         name: agency?.name,
