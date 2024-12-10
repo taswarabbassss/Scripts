@@ -1,64 +1,51 @@
 {
-  "id": "66910581db257e43e498f653",
-  "eventType": "APPOINTMENT",
-  "source": "TASK",
-  "agencyName": "Broo test",
-  "eventName": "Appointment",
-  "eventDate": "2024-07-17T00:00:00",
-  "status": "SCHEDULED",
-  "domain": "BEHAVIORAL_HEALTH",
-  "clientId": "6684e5bd065e575c95df424e",
-  "provider": {
-    "id": "6310a5f615283a509ca3c18e",
-    "firstName": "Ismaeel",
-    "lastName": "Haider",
-    "userName": null
-  },
-  "sourceId": "6690c692d9d80260d4ab25c5",
-  "topic": "JLDFJLAS",
-  "appointmentDateTime": {
-    "start": "2024-07-17T00:00:00",
-    "end": "2024-07-17T23:59:00",
-    "allDay": true
-  },
-  "location": "101",
-  "usersDetails": [
-    {
-      "id": "62ea720165360e26ca8078a4",
-      "firstName": "sadofia",
-      "lastName": "Rafiq",
-      "agency": {
-        "id": "62ea71865968ff028ec7be98",
-        "name": "Food Provider Entity",
-        "nickname": "Food Provider"
-      },
-      "officeEmail": "srafiq+3@stellatechnology.com",
-      "consentRevoked": false
+  "createdBy": "6310a5f615283a509ca3c18e",
+  "createdAt": "2024-11-19T12:34:19.79",
+  "lastModifiedBy": "6310a5f615283a509ca3c18e",
+  "lastModifiedAt": "2024-11-19T12:34:20.063",
+  "dataStatus": "ACTIVE",
+  "dataAudit": {
+    "created": {
+      "when": "2024-11-19T12:34:19.735",
+      "tenantId": "5f572b995d15761b68b1ef0c",
+      "tenantName": "CRN abc",
+      "entityId": "5eaaabd6149b3f0006514c3f",
+      "entityName": "Broo test",
+      "userId": "6310a5f615283a509ca3c18e",
+      "userFullName": "Ismaeel Haider"
     },
-    {
-      "id": "6310a5f615283a509ca3c18e",
-      "firstName": "Ismaeel",
-      "lastName": "Haider",
-      "agency": {
-        "id": "5eaaabd6149b3f0006514c3f",
-        "name": "Broo test",
-        "nickname": "broooo"
-      },
-      "officeEmail": "ismailhaider+1@stellatechnology.com",
-      "picture": "https://dev-qssystems-ninepatch.s3.us-east-2.amazonaws.com/datavault/user/6310a5f615283a509ca3c18e/6310a5f615283a509ca3c18e_2022-09-19T195309.532601.png",
-      "consentRevoked": false
-    },
-    {
-      "id": "668e5e638dd2cc2fdfb5b4b5",
-      "firstName": "Ismaeel",
-      "lastName": "GokBoru",
-      "agency": {
-        "id": "668e5dca79c8b414021a826d",
-        "name": "GokBoru Agency",
-        "nickname": "Seemab GokBoru"
-      },
-      "officeEmail": "ismailhaider@stellatechnology.com",
-      "consentRevoked": false
+    "updated": {
+      "when": "2024-11-19T12:34:20.063",
+      "tenantId": "5f572b995d15761b68b1ef0c",
+      "tenantName": "CRN abc",
+      "entityId": "5eaaabd6149b3f0006514c3f",
+      "entityName": "Broo test",
+      "userId": "6310a5f615283a509ca3c18e",
+      "userFullName": "Ismaeel Haider"
     }
-  ]
+  },
+  "id": "673c85cbc31a0c1280f7ab54",
+  "clientId": "6635dda63169a9534099d17b",
+  "firstName": "Tasawar",
+  "lastName": "Second Test",
+  "gender": "MALE",
+  "preferredContact": {
+    "contactMethod": null,
+    "value": null
+  },
+  "emergencyContact": false,
+  "deactivate": false,
+  "permissionToContact": false,
+  "householdShared": true,
+  "relationship": "PARENT",
+  "soleHousehold": true,
+  "addedFromDemographics": false,
+  "deceased": false,
+  "deceasedInfo": {},
+  "noContactOrder": false,
+  "noContactOrderInfo": {},
+  "age": "",
+  "otherParent": null,
+  "parentOtherThanConnections": null,
+  "profilePicture": null
 }

@@ -1,149 +1,21 @@
 {
-  "tenantIds": ["5f572b995d15761b68b1ef0c"],
-  "name": "Centers for Independent Living",
-  "identifier": [
-    {
-      "system": "NP",
-      "value": "scs022",
-      "display": "Centers for Independent Living",
-      "parentId": "cs01",
-      "level": 2.0,
-      "levels": [
-        {
-          "value": "cs01",
-          "system": "NP",
-          "display": "Disability Services",
-          "parentId": "s",
-          "level": 1.0
-        },
-        {
-          "value": "s",
-          "system": "NP",
-          "display": "Social",
-          "level": 0.0
-        }
-      ],
-      "_class": "identifier"
-    },
-    {
-      "system": "AIRS",
-      "value": "LR-1550",
-      "display": "Centers for Independent Living",
-      "parentId": "LR",
-      "level": 2.0,
-      "levels": [
-        {
-          "value": "LR",
-          "system": "AIRS",
-          "display": "Rehabilitation/Habilitation Services",
-          "parentId": "L",
-          "level": 1.0
-        },
-        {
-          "value": "L",
-          "system": "AIRS",
-          "display": "Health Care",
-          "level": 0.0
-        }
-      ],
-      "_class": "identifier"
-    },
-    {
-      "system": "AIRS",
-      "value": "BH-7000.5100-330",
-      "display": "Residential Housing Options",
-      "parentId": "BH-7000.5100",
-      "level": 4.0,
-      "levels": [
-        {
-          "value": "BH-7000.5100",
-          "parentId": "BH-7000",
-          "system": "AIRS",
-          "display": "Residential Housing Options",
-          "level": 3.0
-        },
-        {
-          "value": "BH-7000",
-          "system": "AIRS",
-          "display": "Residential Housing Options",
-          "parentId": "BH",
-          "level": 2.0
-        },
-        {
-          "value": "BH",
-          "system": "AIRS",
-          "display": "Housing/Shelter",
-          "parentId": "B",
-          "level": 1.0
-        },
-        {
-          "value": "B",
-          "system": "AIRS",
-          "display": "Basic Needs",
-          "level": 0.0
-        }
-      ],
-      "_class": "identifier"
-    },
-    {
-      "system": "AIRS",
-      "value": "BH-8400.6000-800",
-      "display": "Supportive Housing",
-      "parentId": "BH-8400.6000",
-      "level": 4.0,
-      "levels": [
-        {
-          "value": "BH-8400.6000",
-          "parentId": "BH-8400",
-          "system": "AIRS",
-          "display": "Supportive Housing",
-          "level": 3.0
-        },
-        {
-          "value": "BH-8400",
-          "system": "AIRS",
-          "display": "Supportive Housing",
-          "parentId": "BH",
-          "level": 2.0
-        },
-        {
-          "value": "BH",
-          "system": "AIRS",
-          "display": "Housing/Shelter",
-          "parentId": "B",
-          "level": 1.0
-        },
-        {
-          "value": "B",
-          "system": "AIRS",
-          "display": "Basic Needs",
-          "level": 0.0
-        }
-      ],
-      "_class": "identifier"
-    },
-    {
-      "system": "AIRS",
-      "value": "LR-3200",
-      "display": "Independent Living Skills Instruction",
-      "parentId": "LR",
-      "level": 2.0,
-      "levels": [
-        {
-          "value": "LR",
-          "system": "AIRS",
-          "display": "Rehabilitation/Habilitation Services",
-          "parentId": "L",
-          "level": 1.0
-        },
-        {
-          "value": "L",
-          "system": "AIRS",
-          "display": "Health Care",
-          "level": 0.0
-        }
-      ],
-      "_class": "identifier"
+  "_id": null,
+  "test:[ObjectId("604f016f24aa9a0006141c00"),
+    ObjectId("631b29703dd5d3232cb5d356"),
+    ObjectId("6391b4e40196493742a45db2"),
+    ObjectId("64b639a584bf30436c6f64d5"),
+    ObjectId("5efed4372ab79c000652a8f4"),
+    ObjectId("66d54fce0f6f9d2473dcf487"),
+    ObjectId("6082bab624aa9a00064937a7"),
+    ObjectId("5fd6809aa7b11b00065cc233"),
+    ObjectId("5ee7e0bf2ab79c0006052845"),
+    ObjectId("5d02417197a1c0000116740d"),
+    ObjectId("5f87e3dca7b11b0006637121"),
+    ObjectId("5d2328c724aa9a00013af0c7"),
+    ObjectId("5de909c42ab79c00064a4f61"),
+    ObjectId("5ef4a43b2ab79c0006b668f1"),
+    ObjectId("66b9c4dd750cbf6bbe128ed8"),
+    ObjectId("5d0240ad97a1c0000116740c")]
     }
   ]
 }
